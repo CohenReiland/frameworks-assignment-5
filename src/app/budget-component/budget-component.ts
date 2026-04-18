@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NavbarComponent } from '../navbar-component/navbar-component';
 import { BudgetService } from '../services/budget-service';
@@ -6,7 +7,7 @@ import { BudgetService } from '../services/budget-service';
 @Component({
   selector: 'app-budget-component',
   standalone: true,
-  imports: [NavbarComponent, ReactiveFormsModule],
+  imports: [NavbarComponent, ReactiveFormsModule, DecimalPipe],
   templateUrl: './budget-component.html',
   styleUrl: './budget-component.css',
 })
@@ -32,6 +33,13 @@ export class BudgetComponent {
   protected async submitBudget(): Promise<void> {
     this.submitted = true;
     this.budgetError = '';
+
+    const rawBudget = this.budgetForm.getRawValue();
+    const categoryId =
+      rawBudget.categoryId.trim() ||
+      rawBudget.categoryName.trim().toLowerCase().replace(/\s+/g, '-');
+
+    this.budgetForm.patchValue({ categoryId });
 
     if (this.budgetForm.invalid) {
       this.budgetForm.markAllAsTouched();

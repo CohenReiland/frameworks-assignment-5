@@ -6,8 +6,8 @@
         <p class="eyebrow mb-2">Budget Planning</p>
         <h1 class="page-title mb-2">Plan category budgets with built-in alerts</h1>
         <p class="page-subtitle mb-0">
-          Set monthly limits for each category, review usage progress, and spot spending risk
-          before you go over budget.
+          Set monthly limits for each category, review usage progress, and spot spending risk before
+          you go over budget.
         </p>
       </div>
 
@@ -30,7 +30,9 @@
     <div class="row g-4 mt-1">
       <div class="col-xl-8">
         <section class="panel-card mb-4">
-          <div class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div
+            class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
+          >
             <div>
               <h2 class="section-title mb-1">Monthly Category Budgets</h2>
               <p class="section-copy mb-0">
@@ -41,78 +43,56 @@
           </div>
 
           <div class="budget-list mt-4">
-            <article class="budget-row">
-              <div class="budget-meta">
-                <div class="budget-icon blue">F</div>
-                <div>
-                  <h3>Food & Dining</h3>
-                  <p>Spent $540 of $700 this month.</p>
+            @for (budget of budgets(); track budget.id) {
+              <article class="budget-row">
+                <div class="budget-meta">
+                  <div class="budget-icon blue">{{ budget.categoryName.charAt(0) }}</div>
+                  <div>
+                    <h3>{{ budget.categoryName }}</h3>
+                    <p>Spent ${{ budget.spent }} of ${{ budget.limit }} this month.</p>
+                  </div>
                 </div>
-              </div>
-              <div class="budget-status">
-                <span class="status-pill good">77% Used</span>
-                <div class="budget-amount">$160 left</div>
-              </div>
-              <div class="progress budget-progress">
-                <div class="progress-bar progress-good" style="width: 77%"></div>
-              </div>
-            </article>
-
-            <article class="budget-row">
-              <div class="budget-meta">
-                <div class="budget-icon orange">T</div>
-                <div>
-                  <h3>Transportation</h3>
-                  <p>Spent $355 of $400 this month.</p>
+                <div class="budget-status">
+                  <span
+                    class="status-pill"
+                    [class.good]="budget.spent <= budget.limit * 0.8"
+                    [class.warn]="budget.spent > budget.limit * 0.8 && budget.spent <= budget.limit"
+                    [class.danger]="budget.spent > budget.limit"
+                  >
+                    {{
+                      budget.spent > budget.limit
+                        ? 'Exceeded'
+                        : ((budget.spent / budget.limit) * 100 | number: '1.0-0') + '% Used'
+                    }}
+                  </span>
+                  <div class="budget-amount">
+                    {{
+                      budget.spent > budget.limit
+                        ? 'Over by $' + (budget.spent - budget.limit)
+                        : '$' + (budget.limit - budget.spent) + ' left'
+                    }}
+                  </div>
                 </div>
-              </div>
-              <div class="budget-status">
-                <span class="status-pill warn">89% Used</span>
-                <div class="budget-amount">$45 left</div>
-              </div>
-              <div class="progress budget-progress">
-                <div class="progress-bar progress-warn" style="width: 89%"></div>
-              </div>
-            </article>
-
-            <article class="budget-row">
-              <div class="budget-meta">
-                <div class="budget-icon purple">H</div>
-                <div>
-                  <h3>Housing</h3>
-                  <p>Spent $1,420 of $1,400 this month.</p>
+                <div class="progress budget-progress">
+                  <div
+                    class="progress-bar"
+                    [class.progress-good]="budget.spent <= budget.limit * 0.8"
+                    [class.progress-warn]="
+                      budget.spent > budget.limit * 0.8 && budget.spent <= budget.limit
+                    "
+                    [class.progress-danger]="budget.spent > budget.limit"
+                    [style.width.%]="budget.limit > 0 ? (budget.spent / budget.limit) * 100 : 0"
+                  ></div>
                 </div>
-              </div>
-              <div class="budget-status">
-                <span class="status-pill danger">Exceeded</span>
-                <div class="budget-amount">Over by $20</div>
-              </div>
-              <div class="progress budget-progress">
-                <div class="progress-bar progress-danger" style="width: 100%"></div>
-              </div>
-            </article>
-
-            <article class="budget-row">
-              <div class="budget-meta">
-                <div class="budget-icon green">M</div>
-                <div>
-                  <h3>Medical</h3>
-                  <p>Spent $120 of $300 this month.</p>
-                </div>
-              </div>
-              <div class="budget-status">
-                <span class="status-pill good">40% Used</span>
-                <div class="budget-amount">$180 left</div>
-              </div>
-              <div class="progress budget-progress">
-                <div class="progress-bar progress-good" style="width: 40%"></div>
-              </div>
-            </article>
+              </article>
+            }
           </div>
         </section>
 
         <section class="panel-card">
-          <div class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div
+            class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
+          >
             <div>
               <h2 class="section-title mb-1">Budget Alerts</h2>
               <p class="section-copy mb-0">
@@ -168,25 +148,60 @@
             <div class="budget-icon blue">F</div>
             <div>
               <p class="preview-label mb-1">Preview</p>
-              <h3 class="preview-title mb-1">Food & Dining</h3>
-              <p class="preview-copy mb-0">$700 target with an alert at 85% usage.</p>
+              <h3 class="preview-title mb-1">
+                {{ budgetForm.controls.categoryName.value || 'New Budget' }}
+              </h3>
+              <p class="preview-copy mb-0">
+                ${{ budgetForm.controls.limit.value }} target with an alert at
+                {{ budgetForm.controls.alertThreshold.value }}% usage.
+              </p>
             </div>
           </div>
 
-          <div class="form-mock mt-4">
+          <form
+            class="form-mock mt-4"
+            [formGroup]="budgetForm"
+            (ngSubmit)="submitBudget()"
+            novalidate
+          >
             <div class="mock-field">
-              <label>Category</label>
-              <div class="mock-input">Food & Dining</div>
+              <label for="budgetCategory">Category</label>
+              <input
+                id="budgetCategory"
+                class="mock-input"
+                type="text"
+                formControlName="categoryName"
+                placeholder="Food & Dining"
+              />
+              @if (submitted && budgetForm.controls.categoryName.invalid) {
+                <p class="field-error">Category is required.</p>
+              }
             </div>
 
             <div class="mock-field">
-              <label>Monthly Limit</label>
-              <div class="mock-input">$700.00</div>
+              <label for="budgetLimit">Monthly Limit</label>
+              <input
+                id="budgetLimit"
+                class="mock-input"
+                type="number"
+                formControlName="limit"
+                min="0"
+                step="0.01"
+                placeholder="700"
+              />
             </div>
 
             <div class="mock-field">
-              <label>Alert Threshold</label>
-              <div class="mock-input">Notify when 85% of the budget is used</div>
+              <label for="budgetAlertThreshold">Alert Threshold (%)</label>
+              <input
+                id="budgetAlertThreshold"
+                class="mock-input"
+                type="number"
+                formControlName="alertThreshold"
+                min="1"
+                max="100"
+                placeholder="85"
+              />
             </div>
 
             <div class="mock-field">
@@ -198,10 +213,18 @@
               </div>
             </div>
 
-            <button class="btn btn-primary w-100 rounded-pill py-3 create-button">
-              Save Monthly Budget
+            @if (budgetError) {
+              <p class="field-error">{{ budgetError }}</p>
+            }
+
+            <button
+              class="btn btn-primary w-100 rounded-pill py-3 create-button"
+              type="submit"
+              [disabled]="isLoading()"
+            >
+              {{ isLoading() ? 'Saving...' : 'Save Monthly Budget' }}
             </button>
-          </div>
+          </form>
         </aside>
       </div>
     </div>
