@@ -37,44 +37,87 @@
             </p>
           </div>
 
-          <div class="form-mock mt-4">
+          <form class="form-mock mt-4" [formGroup]="transactionForm" (ngSubmit)="submitTransaction()" novalidate>
             <div class="mock-field">
-              <label>Amount</label>
-              <div class="mock-input">$84.50</div>
+              <label for="transactionAmount">Amount</label>
+              <input
+                id="transactionAmount"
+                class="mock-input"
+                type="number"
+                formControlName="amount"
+                min="0.01"
+                step="0.01"
+                placeholder="84.50"
+              />
+              @if (submitted && transactionForm.controls.amount.invalid) {
+                <p class="field-error">Enter a valid amount greater than 0.</p>
+              }
             </div>
 
             <div class="mock-field">
-              <label>Category</label>
-              <div class="mock-input">Food</div>
+              <label for="transactionCategory">Category</label>
+              <input
+                id="transactionCategory"
+                class="mock-input"
+                type="text"
+                formControlName="categoryName"
+                placeholder="Food"
+              />
+              @if (submitted && transactionForm.controls.categoryName.invalid) {
+                <p class="field-error">Category is required.</p>
+              }
             </div>
 
             <div class="mock-field">
-              <label>Date</label>
-              <div class="mock-input">April 18, 2026</div>
+              <label for="transactionDate">Date</label>
+              <input
+                id="transactionDate"
+                class="mock-input"
+                type="date"
+                formControlName="date"
+              />
             </div>
 
             <div class="mock-field">
-              <label>Notes</label>
-              <div class="mock-input">Dinner with friends after work</div>
+              <label for="transactionNotes">Notes</label>
+              <input
+                id="transactionNotes"
+                class="mock-input"
+                type="text"
+                formControlName="notes"
+                placeholder="Dinner with friends after work"
+              />
             </div>
 
             <div class="mock-field">
-              <label>Type</label>
-              <div class="type-toggle">
-                <button class="type-option income" type="button">Income</button>
-                <button class="type-option expense active" type="button">Expense</button>
-              </div>
+              <label for="transactionType">Type</label>
+              <select id="transactionType" class="mock-input" formControlName="type">
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
             </div>
+
+            @if (transactionError) {
+              <p class="field-error">{{ transactionError }}</p>
+            }
 
             <div class="action-row">
-              <button class="btn btn-primary rounded-pill px-4 py-3 flex-fill primary-button">
-                Save Transaction
+              <button
+                class="btn btn-primary rounded-pill px-4 py-3 flex-fill primary-button"
+                type="submit"
+                [disabled]="isLoading()"
+              >
+                {{ isLoading() ? 'Saving...' : 'Save Transaction' }}
               </button>
-              <button class="btn btn-outline-light rounded-pill px-4 py-3 flex-fill">
+              <button
+                class="btn btn-outline-light rounded-pill px-4 py-3 flex-fill"
+                type="button"
+                (click)="resetTransactionForm()"
+              >
                 Clear
               </button>
             </div>
-          </div>
+          </form>
         </aside>
       </div>
 
@@ -130,77 +173,31 @@
           </div>
 
           <div class="transaction-list mt-4">
-            <article class="transaction-row">
-              <div class="transaction-main">
-                <div class="transaction-icon expense">F</div>
-                <div>
-                  <h3>Food</h3>
-                  <p>Apr 18, 2026 - Dinner with friends after work</p>
+            @for (transaction of transactions(); track transaction.id) {
+              <article class="transaction-row">
+                <div class="transaction-main">
+                  <div class="transaction-icon" [class]="'transaction-icon ' + transaction.type">
+                    {{ transaction.categoryName.charAt(0) }}
+                  </div>
+                  <div>
+                    <h3>{{ transaction.categoryName }}</h3>
+                    <p>{{ transaction.date }} - {{ transaction.notes || 'No notes provided' }}</p>
+                  </div>
                 </div>
-              </div>
-              <div class="transaction-meta">
-                <span class="type-pill expense">Expense</span>
-                <strong class="amount expense">-$84.50</strong>
-                <div class="row-actions">
-                  <button class="btn btn-sm btn-outline-light rounded-pill">Edit</button>
-                  <button class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
+                <div class="transaction-meta">
+                  <span class="type-pill" [class]="'type-pill ' + transaction.type">
+                    {{ transaction.type === 'income' ? 'Income' : 'Expense' }}
+                  </span>
+                  <strong class="amount" [class]="'amount ' + transaction.type">
+                    {{ transaction.type === 'income' ? '+' : '-' }}${{ transaction.amount }}
+                  </strong>
+                  <div class="row-actions">
+                    <button class="btn btn-sm btn-outline-light rounded-pill" type="button">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill" type="button">Delete</button>
+                  </div>
                 </div>
-              </div>
-            </article>
-
-            <article class="transaction-row">
-              <div class="transaction-main">
-                <div class="transaction-icon income">I</div>
-                <div>
-                  <h3>Income</h3>
-                  <p>Apr 15, 2026 - Freelance project payment</p>
-                </div>
-              </div>
-              <div class="transaction-meta">
-                <span class="type-pill income">Income</span>
-                <strong class="amount income">+$620.00</strong>
-                <div class="row-actions">
-                  <button class="btn btn-sm btn-outline-light rounded-pill">Edit</button>
-                  <button class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
-                </div>
-              </div>
-            </article>
-
-            <article class="transaction-row">
-              <div class="transaction-main">
-                <div class="transaction-icon rent">R</div>
-                <div>
-                  <h3>Rent</h3>
-                  <p>Apr 3, 2026 - Monthly apartment payment</p>
-                </div>
-              </div>
-              <div class="transaction-meta">
-                <span class="type-pill expense">Expense</span>
-                <strong class="amount expense">-$1,200.00</strong>
-                <div class="row-actions">
-                  <button class="btn btn-sm btn-outline-light rounded-pill">Edit</button>
-                  <button class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
-                </div>
-              </div>
-            </article>
-
-            <article class="transaction-row">
-              <div class="transaction-main">
-                <div class="transaction-icon travel">T</div>
-                <div>
-                  <h3>Travel</h3>
-                  <p>Apr 9, 2026 - Weekend train tickets</p>
-                </div>
-              </div>
-              <div class="transaction-meta">
-                <span class="type-pill expense">Expense</span>
-                <strong class="amount expense">-$148.25</strong>
-                <div class="row-actions">
-                  <button class="btn btn-sm btn-outline-light rounded-pill">Edit</button>
-                  <button class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
-                </div>
-              </div>
-            </article>
+              </article>
+            }
           </div>
         </section>
       </div>

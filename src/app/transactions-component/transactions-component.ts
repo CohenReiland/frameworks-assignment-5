@@ -34,6 +34,16 @@ export class TransactionsComponent {
     this.submitted = true;
     this.transactionError = '';
 
+    const rawTransaction = this.transactionForm.getRawValue();
+    const categoryId =
+      rawTransaction.categoryId.trim() ||
+      rawTransaction.categoryName
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-');
+
+    this.transactionForm.patchValue({ categoryId });
+
     if (this.transactionForm.invalid) {
       this.transactionForm.markAllAsTouched();
       return;
@@ -41,18 +51,24 @@ export class TransactionsComponent {
 
     try {
       await this.transactionService.addTransaction(this.transactionForm.getRawValue());
-      this.transactionForm.reset({
-        amount: 0,
-        categoryId: '',
-        categoryName: '',
-        date: new Date().toISOString().slice(0, 10),
-        notes: '',
-        type: 'expense',
-      });
+      this.resetTransactionForm();
       this.submitted = false;
     } catch (error: unknown) {
       this.transactionError =
         error instanceof Error ? error.message : 'Unable to save transaction. Please try again.';
     }
+  }
+
+  protected resetTransactionForm(): void {
+    this.transactionForm.reset({
+      amount: 0,
+      categoryId: '',
+      categoryName: '',
+      date: new Date().toISOString().slice(0, 10),
+      notes: '',
+      type: 'expense',
+    });
+    this.submitted = false;
+    this.transactionError = '';
   }
 }
