@@ -1,4 +1,223 @@
 <app-navbar-component></app-navbar-component>
 <main class="page-with-navbar">
-  <p>dashboard-component works!</p>
+  <section class="container-fluid px-0 dashboard-page">
+    <div class="page-header d-flex flex-column flex-xl-row justify-content-between gap-4">
+      <div>
+        <p class="eyebrow mb-2">Dashboard & Analytics</p>
+        <h1 class="page-title mb-2">See where your money is going this month</h1>
+        <p class="page-subtitle mb-0">
+          Review monthly spending, compare income against expenses, and check how actual totals
+          line up against your planned budget.
+        </p>
+      </div>
+
+      <div class="overview-chips d-flex flex-wrap gap-3">
+        <div class="stat-chip">
+          <span class="stat-label">Monthly Spending</span>
+          <strong>$3,760</strong>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-label">Income</span>
+          <strong>$5,240</strong>
+        </div>
+        <div class="stat-chip accent">
+          <span class="stat-label">Budget Left</span>
+          <strong>$1,040</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+      <div class="col-xl-8">
+        <section class="panel-card mb-4">
+          <div class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div>
+              <h2 class="section-title mb-1">Monthly Spending Summary</h2>
+              <p class="section-copy mb-0">
+                A quick look at how spending shifted across your main categories this month.
+              </p>
+            </div>
+            <span class="section-badge">April 2026</span>
+          </div>
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-4">
+              <article class="summary-card">
+                <span class="summary-label">Top Category</span>
+                <h3>Housing</h3>
+                <p>$1,420 spent this month</p>
+              </article>
+            </div>
+            <div class="col-md-4">
+              <article class="summary-card">
+                <span class="summary-label">Fastest Growth</span>
+                <h3>Travel</h3>
+                <p>18% more than last month</p>
+              </article>
+            </div>
+            <div class="col-md-4">
+              <article class="summary-card">
+                <span class="summary-label">Best Controlled</span>
+                <h3>Medical</h3>
+                <p>Stayed well under budget</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <section class="panel-card chart-card h-100">
+              <div class="section-heading">
+                <h2 class="section-title mb-1">Category-Wise Spending</h2>
+                <p class="section-copy mb-0">Pie chart mock showing where expenses are concentrated.</p>
+              </div>
+
+              <div class="pie-chart-wrapper mt-4">
+                <div class="pie-chart"></div>
+                <div class="chart-legend">
+                  <div class="legend-item">
+                    <span class="legend-dot housing"></span>
+                    <span>Housing - 38%</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot food"></span>
+                    <span>Food - 22%</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot travel"></span>
+                    <span>Travel - 16%</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot bills"></span>
+                    <span>Bills - 14%</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot other"></span>
+                    <span>Other - 10%</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="col-lg-6">
+            <section class="panel-card chart-card h-100">
+              <div class="section-heading">
+                <h2 class="section-title mb-1">Income vs Expense</h2>
+                <p class="section-copy mb-0">Bar chart mock comparing cash coming in and going out.</p>
+              </div>
+
+              <div class="bar-chart mt-4">
+                <div class="bar-group">
+                  <div class="bar-label">Jan</div>
+                  <div class="bars">
+                    <div class="bar income" style="height: 78%"></div>
+                    <div class="bar expense" style="height: 61%"></div>
+                  </div>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-label">Feb</div>
+                  <div class="bars">
+                    <div class="bar income" style="height: 84%"></div>
+                    <div class="bar expense" style="height: 66%"></div>
+                  </div>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-label">Mar</div>
+                  <div class="bars">
+                    <div class="bar income" style="height: 72%"></div>
+                    <div class="bar expense" style="height: 58%"></div>
+                  </div>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-label">Apr</div>
+                  <div class="bars">
+                    <div class="bar income" style="height: 88%"></div>
+                    <div class="bar expense" style="height: 69%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="chart-legend inline mt-4">
+                <div class="legend-item">
+                  <span class="legend-dot income"></span>
+                  <span>Income</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot expense"></span>
+                  <span>Expense</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-4">
+        <section class="panel-card sticky-panel">
+          <div class="section-heading">
+            <h2 class="section-title mb-1">Budget vs Actual</h2>
+            <p class="section-copy mb-0">
+              Static comparison of planned category budgets against current spending.
+            </p>
+          </div>
+
+          <div class="comparison-list mt-4">
+            <article class="comparison-row">
+              <div class="comparison-top">
+                <div>
+                  <h3>Food</h3>
+                  <p>Budget $700 - Actual $540</p>
+                </div>
+                <span class="status-pill good">On Track</span>
+              </div>
+              <div class="progress compare-progress">
+                <div class="progress-bar progress-good" style="width: 77%"></div>
+              </div>
+            </article>
+
+            <article class="comparison-row">
+              <div class="comparison-top">
+                <div>
+                  <h3>Transportation</h3>
+                  <p>Budget $400 - Actual $355</p>
+                </div>
+                <span class="status-pill warn">Near Limit</span>
+              </div>
+              <div class="progress compare-progress">
+                <div class="progress-bar progress-warn" style="width: 89%"></div>
+              </div>
+            </article>
+
+            <article class="comparison-row">
+              <div class="comparison-top">
+                <div>
+                  <h3>Housing</h3>
+                  <p>Budget $1,400 - Actual $1,420</p>
+                </div>
+                <span class="status-pill danger">Over Budget</span>
+              </div>
+              <div class="progress compare-progress">
+                <div class="progress-bar progress-danger" style="width: 100%"></div>
+              </div>
+            </article>
+
+            <article class="comparison-row">
+              <div class="comparison-top">
+                <div>
+                  <h3>Medical</h3>
+                  <p>Budget $300 - Actual $120</p>
+                </div>
+                <span class="status-pill good">Healthy</span>
+              </div>
+              <div class="progress compare-progress">
+                <div class="progress-bar progress-good" style="width: 40%"></div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
 </main>
