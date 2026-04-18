@@ -1,7 +1,9 @@
 <app-navbar-component></app-navbar-component>
 <main class="page-with-navbar">
   <section class="container-fluid px-0 categories-page">
-    <div class="page-header d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-4">
+    <div
+      class="page-header d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-4"
+    >
       <div>
         <p class="eyebrow mb-2">Categories Management</p>
         <h1 class="page-title mb-2">Organize spending with smart categories</h1>
@@ -26,7 +28,9 @@
     <div class="row g-4 mt-1">
       <div class="col-xl-8">
         <section class="panel-card mb-4">
-          <div class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div
+            class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
+          >
             <div>
               <h2 class="section-title mb-1">Predefined Categories</h2>
               <p class="section-copy mb-0">
@@ -95,7 +99,9 @@
         </section>
 
         <section class="panel-card">
-          <div class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div
+            class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
+          >
             <div>
               <h2 class="section-title mb-1">User-Defined Categories</h2>
               <p class="section-copy mb-0">
@@ -106,61 +112,25 @@
           </div>
 
           <div class="custom-list mt-4">
-            <article class="custom-category-row">
-              <div class="custom-meta">
-                <div class="category-icon color-gold">T</div>
-                <div>
-                  <h3>Travel Fund</h3>
-                  <p>Flights, hotels, excursions, and annual vacation planning.</p>
-                </div>
-              </div>
-              <div class="category-tags">
-                <span class="tag-pill">Custom</span>
-                <span class="tag-pill">Gold</span>
-              </div>
-            </article>
-
-            <article class="custom-category-row">
-              <div class="custom-meta">
-                <div class="category-icon color-pink">A</div>
-                <div>
-                  <h3>Art Supplies</h3>
-                  <p>Paints, sketchbooks, design tools, printing, and craft materials.</p>
-                </div>
-              </div>
-              <div class="category-tags">
-                <span class="tag-pill">Custom</span>
-                <span class="tag-pill">Pink</span>
-              </div>
-            </article>
-
-            <article class="custom-category-row">
-              <div class="custom-meta">
-                <div class="category-icon color-blue">G</div>
-                <div>
-                  <h3>Gaming</h3>
-                  <p>Digital purchases, subscriptions, accessories, and online services.</p>
-                </div>
-              </div>
-              <div class="category-tags">
-                <span class="tag-pill">Custom</span>
-                <span class="tag-pill">Blue</span>
-              </div>
-            </article>
-
-            <article class="custom-category-row">
-              <div class="custom-meta">
-                <div class="category-icon color-green">P</div>
-                <div>
-                  <h3>Pet Care</h3>
-                  <p>Food, vet appointments, grooming, toys, and everyday pet expenses.</p>
-                </div>
-              </div>
-              <div class="category-tags">
-                <span class="tag-pill">Custom</span>
-                <span class="tag-pill">Green</span>
-              </div>
-            </article>
+            @for (category of categories(); track category.id) {
+              @if (!category.isPredefined) {
+                <article class="custom-category-row">
+                  <div class="custom-meta">
+                    <div class="category-icon" [class]="'category-icon ' + category.color">
+                      {{ category.icon }}
+                    </div>
+                    <div>
+                      <h3>{{ category.name }}</h3>
+                      <p>{{ category.description || 'No description provided.' }}</p>
+                    </div>
+                  </div>
+                  <div class="category-tags">
+                    <span class="tag-pill">Custom</span>
+                    <span class="tag-pill">{{ category.type }}</span>
+                  </div>
+                </article>
+              }
+            }
           </div>
         </section>
       </div>
@@ -183,45 +153,79 @@
             </div>
           </div>
 
-          <div class="form-mock mt-4">
+          <form
+            class="form-mock mt-4"
+            [formGroup]="categoryForm"
+            (ngSubmit)="submitCategory()"
+            novalidate
+          >
             <div class="mock-field">
-              <label>Category Name</label>
-              <div class="mock-input">Weekend Plans</div>
+              <label for="categoryName">Category Name</label>
+              <input
+                id="categoryName"
+                class="mock-input"
+                type="text"
+                formControlName="name"
+                placeholder="Weekend Plans"
+              />
+              @if (submitted && categoryForm.controls.name.invalid) {
+                <p class="field-error">Category name is required.</p>
+              }
             </div>
 
             <div class="mock-field">
-              <label>Description</label>
-              <div class="mock-input">Trips, events, and anything fun for the weekend.</div>
+              <label for="categoryDescription">Description</label>
+              <input
+                id="categoryDescription"
+                class="mock-input"
+                type="text"
+                formControlName="description"
+                placeholder="Trips, events, and anything fun for the weekend."
+              />
             </div>
 
             <div class="mock-field">
-              <label>Choose Icon</label>
-              <div class="icon-picker">
-                <button class="icon-option active" type="button">W</button>
-                <button class="icon-option" type="button">S</button>
-                <button class="icon-option" type="button">B</button>
-                <button class="icon-option" type="button">H</button>
-                <button class="icon-option" type="button">M</button>
-                <button class="icon-option" type="button">T</button>
-              </div>
+              <label for="categoryIcon">Choose Icon</label>
+              <input
+                id="categoryIcon"
+                class="mock-input"
+                type="text"
+                formControlName="icon"
+                placeholder="W"
+              />
             </div>
 
             <div class="mock-field">
-              <label>Choose Color</label>
-              <div class="color-picker">
-                <button class="color-dot color-blue active" type="button"></button>
-                <button class="color-dot color-green" type="button"></button>
-                <button class="color-dot color-orange" type="button"></button>
-                <button class="color-dot color-purple" type="button"></button>
-                <button class="color-dot color-pink" type="button"></button>
-                <button class="color-dot color-gold" type="button"></button>
-              </div>
+              <label for="categoryColor">Choose Color Class</label>
+              <input
+                id="categoryColor"
+                class="mock-input"
+                type="text"
+                formControlName="color"
+                placeholder="color-blue"
+              />
             </div>
 
-            <button class="btn btn-primary w-100 rounded-pill py-3 mt-2 create-button">
-              Save Category
+            <div class="mock-field">
+              <label for="categoryType">Type</label>
+              <select id="categoryType" class="mock-input" formControlName="type">
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
+            </div>
+
+            @if (categoryError) {
+              <p class="field-error">{{ categoryError }}</p>
+            }
+
+            <button
+              class="btn btn-primary w-100 rounded-pill py-3 mt-2 create-button"
+              type="submit"
+              [disabled]="isLoading()"
+            >
+              {{ isLoading() ? 'Saving...' : 'Save Category' }}
             </button>
-          </div>
+          </form>
         </aside>
       </div>
     </div>
