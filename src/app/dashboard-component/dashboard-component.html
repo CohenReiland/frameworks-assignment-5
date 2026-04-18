@@ -6,23 +6,23 @@
         <p class="eyebrow mb-2">Dashboard & Analytics</p>
         <h1 class="page-title mb-2">See where your money is going this month</h1>
         <p class="page-subtitle mb-0">
-          Review monthly spending, compare income against expenses, and check how actual totals
-          line up against your planned budget.
+          Review monthly spending, compare income against expenses, and check how actual totals line
+          up against your planned budget.
         </p>
       </div>
 
       <div class="overview-chips d-flex flex-wrap gap-3">
         <div class="stat-chip">
           <span class="stat-label">Monthly Spending</span>
-          <strong>$3,760</strong>
+          <strong>${{ monthlyExpenses() }}</strong>
         </div>
         <div class="stat-chip">
           <span class="stat-label">Income</span>
-          <strong>$5,240</strong>
+          <strong>${{ monthlyIncome() }}</strong>
         </div>
         <div class="stat-chip accent">
           <span class="stat-label">Budget Left</span>
-          <strong>$1,040</strong>
+          <strong>${{ budgetLeft() }}</strong>
         </div>
       </div>
     </div>
@@ -30,7 +30,9 @@
     <div class="row g-4 mt-1">
       <div class="col-xl-8">
         <section class="panel-card mb-4">
-          <div class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div
+            class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
+          >
             <div>
               <h2 class="section-title mb-1">Monthly Spending Summary</h2>
               <p class="section-copy mb-0">
@@ -44,22 +46,37 @@
             <div class="col-md-4">
               <article class="summary-card">
                 <span class="summary-label">Top Category</span>
-                <h3>Housing</h3>
-                <p>$1,420 spent this month</p>
+                <h3>{{ topCategory()?.categoryName || 'No data yet' }}</h3>
+                <p>
+                  @if (topCategory()) {
+                    ${{ topCategory()!.spent }} spent this month
+                  } @else {
+                    Add budgets to view insights
+                  }
+                </p>
               </article>
             </div>
             <div class="col-md-4">
               <article class="summary-card">
-                <span class="summary-label">Fastest Growth</span>
-                <h3>Travel</h3>
-                <p>18% more than last month</p>
+                <span class="summary-label">Over Budget</span>
+                <h3>{{ overBudgetCount() }}</h3>
+                <p>Categories currently over planned limit</p>
               </article>
             </div>
             <div class="col-md-4">
               <article class="summary-card">
                 <span class="summary-label">Best Controlled</span>
-                <h3>Medical</h3>
-                <p>Stayed well under budget</p>
+                <h3>{{ bestControlledCategory()?.categoryName || 'No data yet' }}</h3>
+                <p>
+                  @if (bestControlledCategory()) {
+                    ${{ bestControlledCategory()!.spent }} of ${{
+                      bestControlledCategory()!.limit
+                    }}
+                    used
+                  } @else {
+                    Add budgets to view insights
+                  }
+                </p>
               </article>
             </div>
           </div>
@@ -70,7 +87,9 @@
             <section class="panel-card chart-card h-100">
               <div class="section-heading">
                 <h2 class="section-title mb-1">Category-Wise Spending</h2>
-                <p class="section-copy mb-0">Pie chart mock showing where expenses are concentrated.</p>
+                <p class="section-copy mb-0">
+                  Pie chart mock showing where expenses are concentrated.
+                </p>
               </div>
 
               <div class="pie-chart-wrapper mt-4">
@@ -105,7 +124,9 @@
             <section class="panel-card chart-card h-100">
               <div class="section-heading">
                 <h2 class="section-title mb-1">Income vs Expense</h2>
-                <p class="section-copy mb-0">Bar chart mock comparing cash coming in and going out.</p>
+                <p class="section-copy mb-0">
+                  Bar chart mock comparing cash coming in and going out.
+                </p>
               </div>
 
               <div class="bar-chart mt-4">
@@ -164,57 +185,41 @@
           </div>
 
           <div class="comparison-list mt-4">
-            <article class="comparison-row">
-              <div class="comparison-top">
-                <div>
-                  <h3>Food</h3>
-                  <p>Budget $700 - Actual $540</p>
+            @for (budget of budgets(); track budget.id) {
+              <article class="comparison-row">
+                <div class="comparison-top">
+                  <div>
+                    <h3>{{ budget.categoryName }}</h3>
+                    <p>Budget ${{ budget.limit }} - Actual ${{ budget.spent }}</p>
+                  </div>
+                  <span
+                    class="status-pill"
+                    [class.good]="budget.spent <= budget.limit * 0.8"
+                    [class.warn]="budget.spent > budget.limit * 0.8 && budget.spent <= budget.limit"
+                    [class.danger]="budget.spent > budget.limit"
+                  >
+                    {{
+                      budget.spent > budget.limit
+                        ? 'Over Budget'
+                        : budget.spent > budget.limit * 0.8
+                          ? 'Near Limit'
+                          : 'On Track'
+                    }}
+                  </span>
                 </div>
-                <span class="status-pill good">On Track</span>
-              </div>
-              <div class="progress compare-progress">
-                <div class="progress-bar progress-good" style="width: 77%"></div>
-              </div>
-            </article>
-
-            <article class="comparison-row">
-              <div class="comparison-top">
-                <div>
-                  <h3>Transportation</h3>
-                  <p>Budget $400 - Actual $355</p>
+                <div class="progress compare-progress">
+                  <div
+                    class="progress-bar"
+                    [class.progress-good]="budget.spent <= budget.limit * 0.8"
+                    [class.progress-warn]="
+                      budget.spent > budget.limit * 0.8 && budget.spent <= budget.limit
+                    "
+                    [class.progress-danger]="budget.spent > budget.limit"
+                    [style.width.%]="budget.limit > 0 ? (budget.spent / budget.limit) * 100 : 0"
+                  ></div>
                 </div>
-                <span class="status-pill warn">Near Limit</span>
-              </div>
-              <div class="progress compare-progress">
-                <div class="progress-bar progress-warn" style="width: 89%"></div>
-              </div>
-            </article>
-
-            <article class="comparison-row">
-              <div class="comparison-top">
-                <div>
-                  <h3>Housing</h3>
-                  <p>Budget $1,400 - Actual $1,420</p>
-                </div>
-                <span class="status-pill danger">Over Budget</span>
-              </div>
-              <div class="progress compare-progress">
-                <div class="progress-bar progress-danger" style="width: 100%"></div>
-              </div>
-            </article>
-
-            <article class="comparison-row">
-              <div class="comparison-top">
-                <div>
-                  <h3>Medical</h3>
-                  <p>Budget $300 - Actual $120</p>
-                </div>
-                <span class="status-pill good">Healthy</span>
-              </div>
-              <div class="progress compare-progress">
-                <div class="progress-bar progress-good" style="width: 40%"></div>
-              </div>
-            </article>
+              </article>
+            }
           </div>
         </section>
       </div>

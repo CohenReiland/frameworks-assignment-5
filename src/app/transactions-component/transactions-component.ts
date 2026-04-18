@@ -37,10 +37,7 @@ export class TransactionsComponent {
     const rawTransaction = this.transactionForm.getRawValue();
     const categoryId =
       rawTransaction.categoryId.trim() ||
-      rawTransaction.categoryName
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, '-');
+      rawTransaction.categoryName.trim().toLowerCase().replace(/\s+/g, '-');
 
     this.transactionForm.patchValue({ categoryId });
 

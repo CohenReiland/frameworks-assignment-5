@@ -6,8 +6,8 @@
         <p class="eyebrow mb-2">Expense & Income Tracking</p>
         <h1 class="page-title mb-2">Track transactions with filters and quick actions</h1>
         <p class="page-subtitle mb-0">
-          Add income and expenses, review recent activity, and narrow results with category,
-          date, and amount filters.
+          Add income and expenses, review recent activity, and narrow results with category, date,
+          and amount filters.
         </p>
       </div>
 
@@ -37,7 +37,12 @@
             </p>
           </div>
 
-          <form class="form-mock mt-4" [formGroup]="transactionForm" (ngSubmit)="submitTransaction()" novalidate>
+          <form
+            class="form-mock mt-4"
+            [formGroup]="transactionForm"
+            (ngSubmit)="submitTransaction()"
+            novalidate
+          >
             <div class="mock-field">
               <label for="transactionAmount">Amount</label>
               <input
@@ -70,12 +75,7 @@
 
             <div class="mock-field">
               <label for="transactionDate">Date</label>
-              <input
-                id="transactionDate"
-                class="mock-input"
-                type="date"
-                formControlName="date"
-              />
+              <input id="transactionDate" class="mock-input" type="date" formControlName="date" />
             </div>
 
             <div class="mock-field">
@@ -123,7 +123,9 @@
 
       <div class="col-xl-8">
         <section class="panel-card mb-4">
-          <div class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div
+            class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
+          >
             <div>
               <h2 class="section-title mb-1">Search & Filters</h2>
               <p class="section-copy mb-0">
@@ -162,7 +164,9 @@
         </section>
 
         <section class="panel-card">
-          <div class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div
+            class="section-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
+          >
             <div>
               <h2 class="section-title mb-1">Recent Transactions</h2>
               <p class="section-copy mb-0">
@@ -192,8 +196,12 @@
                     {{ transaction.type === 'income' ? '+' : '-' }}${{ transaction.amount }}
                   </strong>
                   <div class="row-actions">
-                    <button class="btn btn-sm btn-outline-light rounded-pill" type="button">Edit</button>
-                    <button class="btn btn-sm btn-outline-danger rounded-pill" type="button">Delete</button>
+                    <button class="btn btn-sm btn-outline-light rounded-pill" type="button">
+                      Edit
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill" type="button">
+                      Delete
+                    </button>
                   </div>
                 </div>
               </article>

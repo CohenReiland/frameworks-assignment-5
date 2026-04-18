@@ -48,4 +48,29 @@ export class DashboardComponent {
   protected readonly overBudgetCount = computed(
     () => this.budgets().filter((budget) => budget.spent > budget.limit).length,
   );
+
+  protected readonly topCategory = computed(() => {
+    const budgets = this.budgets();
+
+    if (budgets.length === 0) {
+      return null;
+    }
+
+    return budgets.reduce((top, budget) => (budget.spent > top.spent ? budget : top), budgets[0]);
+  });
+
+  protected readonly bestControlledCategory = computed(() => {
+    const budgets = this.budgets().filter((budget) => budget.limit > 0);
+
+    if (budgets.length === 0) {
+      return null;
+    }
+
+    return budgets.reduce((best, budget) => {
+      const bestUsage = best.spent / best.limit;
+      const currentUsage = budget.spent / budget.limit;
+
+      return currentUsage < bestUsage ? budget : best;
+    }, budgets[0]);
+  });
 }
