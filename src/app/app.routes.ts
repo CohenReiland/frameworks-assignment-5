@@ -9,31 +9,36 @@ import { LoginComponent } from './login-component/login-component';
 export const routes: Routes = [
   {
     path: '',
+    redirectTo: 'signup',
+    pathMatch: 'full',
+  },
+  {
+    path: 'signup',
     component: SignupComponent,
     title: 'Sign Up',
   },
   {
-    path: '',
+    path: 'login',
     component: LoginComponent,
     title: 'Login',
   },
   {
-    path: '',
+    path: 'dashboard',
     component: DashboardComponent,
     title: 'Dashboard',
   },
   {
-    path: '',
+    path: 'transactions',
     component: TransactionsComponent,
     title: 'Transactions',
   },
   {
-    path: '',
+    path: 'categories',
     component: CategoriesComponent,
     title: 'Categories',
   },
   {
-    path: '',
+    path: 'budget',
     component: BudgetComponent,
     title: 'Budget',
   },

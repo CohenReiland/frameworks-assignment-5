@@ -1,1 +1,62 @@
-<p>signup-component works!</p>
+<section class="signup-page">
+  <div class="card">
+    <h1 class="card-title">Create your account</h1>
+    <p class="card-subtitle">
+      Sign up to start managing your budget, transactions, and categories in one place.
+    </p>
+
+    <form [formGroup]="signupForm" (ngSubmit)="submit()" novalidate>
+      <div class="form-group">
+        <input
+          id="fullName"
+          class="form-control"
+          type="text"
+          placeholder=" "
+          formControlName="fullName"
+        />
+        <label class="floating-label" for="fullName">Full name</label>
+        @if (submitted && signupForm.controls.fullName.invalid) {
+          <p class="field-error">Enter your full name.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <input
+          id="email"
+          class="form-control"
+          type="email"
+          placeholder=" "
+          formControlName="email"
+        />
+        <label class="floating-label" for="email">Email address</label>
+        @if (submitted && signupForm.controls.email.invalid) {
+          <p class="field-error">Enter a valid email address.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <input
+          id="password"
+          class="form-control"
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder=" "
+          formControlName="password"
+        />
+        <label class="floating-label" for="password">Password</label>
+        <button type="button" class="toggle-pw" (click)="togglePasswordVisibility()">
+          {{ showPassword ? 'Hide' : 'Show' }}
+        </button>
+        @if (submitted && signupForm.controls.password.invalid) {
+          <p class="field-error">Password must be at least 6 characters.</p>
+        }
+      </div>
+
+      <button class="btn-create" type="submit">Create account</button>
+    </form>
+
+    <p class="login-text">
+      Already have an account?
+      <a routerLink="/login">Log in</a>
+    </p>
+  </div>
+</section>
