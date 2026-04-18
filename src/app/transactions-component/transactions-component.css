@@ -1,0 +1,15 @@
+.page-with-navbar {
+  min-height: 100vh;
+  margin-left: 108px;
+  background:
+    radial-gradient(circle at top left, rgba(54, 86, 162, 0.12), transparent 32%),
+    linear-gradient(180deg, #17181d 0%, #121318 100%);
+  color: #fff;
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .page-with-navbar {
+    margin-left: 88px;
+  }
+}
