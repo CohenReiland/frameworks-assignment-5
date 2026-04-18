@@ -1,4 +1,48 @@
+<div class="d-flex min-vh-100">
+  <!-- Navbar Sidebar -->
+  <nav class="navbar-sidebar">
+    <!-- User/Profile Icon -->
+    <div class="nav-item nav-item-top">
+      <i class="bi bi-person-circle"></i>
+      <span class="nav-label">Profile</span>
+    </div>
 
+    <!-- Navigation Items -->
+    <div class="nav-items-container">
+      <!-- Dashboard -->
+      <a href="#" class="nav-item" title="Dashboard">
+        <i class="bi bi-speedometer2"></i>
+        <span class="nav-label">Dashboard</span>
+      </a>
 
+      <!-- Transactions -->
+      <a href="#" class="nav-item" title="Transactions">
+        <i class="bi bi-arrow-left-right"></i>
+        <span class="nav-label">Transactions</span>
+      </a>
 
-<router-outlet />
+      <!-- Categories -->
+      <a href="#" class="nav-item" title="Categories">
+        <i class="bi bi-tags"></i>
+        <span class="nav-label">Categories</span>
+      </a>
+
+      <!-- Budget -->
+      <a href="#" class="nav-item" title="Budget">
+        <i class="bi bi-wallet2"></i>
+        <span class="nav-label">Budget</span>
+      </a>
+    </div>
+
+    <!-- Bottom Icon -->
+    <div class="nav-item nav-item-bottom">
+      <i class="bi bi-check-circle"></i>
+      <span class="nav-label">Logout</span>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="flex-grow-1">
+    <router-outlet />
+  </div>
+</div>
