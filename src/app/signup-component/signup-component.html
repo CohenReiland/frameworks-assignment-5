@@ -51,7 +51,13 @@
         }
       </div>
 
-      <button class="btn-create" type="submit">Create account</button>
+      @if (signupError) {
+        <p class="field-error">{{ signupError }}</p>
+      }
+
+      <button class="btn-create" type="submit" [disabled]="isLoading()">
+        {{ isLoading() ? 'Creating account...' : 'Create account' }}
+      </button>
     </form>
 
     <p class="login-text">
