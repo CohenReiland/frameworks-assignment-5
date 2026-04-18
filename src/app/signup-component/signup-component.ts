@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth-service';
 
 @Component({
   selector: 'app-signup-component',
@@ -12,9 +13,12 @@ import { Router, RouterLink } from '@angular/router';
 export class SignupComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
   protected showPassword = false;
   protected submitted = false;
+  protected signupError = '';
+  protected readonly isLoading = this.authService.isLoading;
 
   protected readonly signupForm = this.formBuilder.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(2)]],
@@ -26,14 +30,23 @@ export class SignupComponent {
     this.showPassword = !this.showPassword;
   }
 
-  protected submit(): void {
+  protected async submit(): Promise<void> {
     this.submitted = true;
+    this.signupError = '';
 
     if (this.signupForm.invalid) {
       this.signupForm.markAllAsTouched();
       return;
     }
 
-    void this.router.navigate(['/login']);
+    const { fullName, email, password } = this.signupForm.getRawValue();
+
+    try {
+      await this.authService.signUp({ fullName, email, password });
+      await this.router.navigate(['/dashboard']);
+    } catch (error: unknown) {
+      this.signupError =
+        error instanceof Error ? error.message : 'Unable to create account. Please try again.';
+    }
   }
 }
