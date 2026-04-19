@@ -1,5 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { startWith } from 'rxjs';
 import { CategoryType } from '../models/category';
 import { Transaction } from '../models/transaction';
 import { NavbarComponent } from '../navbar-component/navbar-component';
@@ -61,20 +63,28 @@ export class TransactionsComponent {
     searchText: [''],
   });
 
+  private readonly filterValues = toSignal(
+    this.filterForm.valueChanges.pipe(startWith(this.filterForm.getRawValue())),
+    { initialValue: this.filterForm.getRawValue() },
+  );
+
   protected readonly filteredTransactions = computed(() => {
-    const { dateFrom, dateTo, categoryId, searchText } = this.filterForm.getRawValue();
-    const normalizedSearch = searchText.trim().toLowerCase();
+    const { dateFrom, dateTo, categoryId, searchText } = this.filterValues();
+    const normalizedSearch = (searchText ?? '').trim().toLowerCase();
+    const fromDate = dateFrom ?? '';
+    const toDate = dateTo ?? '';
+    const selectedCategoryId = categoryId ?? '';
 
     return this.transactions().filter((transaction) => {
-      if (dateFrom && transaction.date < dateFrom) {
+      if (fromDate && transaction.date < fromDate) {
         return false;
       }
 
-      if (dateTo && transaction.date > dateTo) {
+      if (toDate && transaction.date > toDate) {
         return false;
       }
 
-      if (categoryId && transaction.categoryId !== categoryId) {
+      if (selectedCategoryId && transaction.categoryId !== selectedCategoryId) {
         return false;
       }
 
