@@ -17,8 +17,10 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  writeBatch,
 } from 'firebase/firestore';
 import { auth, db } from '../firebase.config';
+import { Category } from '../models/category';
 import { User } from '../models/user';
 
 @Injectable({
@@ -31,6 +33,7 @@ export class AuthService {
   readonly isLoading = signal(false);
 
   private readonly userCollection = collection(db, 'users');
+  private readonly categoryCollection = collection(db, 'categories');
 
   constructor() {
     this.loadUsers();
@@ -93,10 +96,77 @@ export class AuthService {
         createdAt: serverTimestamp(),
       });
 
+      await this.seedStarterCategories(credentials.user.uid);
+
       this.currentUser.set(newUser);
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  private async seedStarterCategories(userId: string): Promise<void> {
+    const starterCategories: Omit<Category, 'id' | 'userId'>[] = [
+      {
+        name: 'Salary',
+        description: 'Monthly paycheck and recurring income sources.',
+        icon: 'S',
+        color: 'color-green',
+        type: 'income',
+        isPredefined: true,
+      },
+      {
+        name: 'Freelance',
+        description: 'Side projects, consulting, and contract work.',
+        icon: 'F',
+        color: 'color-cyan',
+        type: 'income',
+        isPredefined: true,
+      },
+      {
+        name: 'Food',
+        description: 'Groceries, dining out, and coffee.',
+        icon: 'F',
+        color: 'color-orange',
+        type: 'expense',
+        isPredefined: true,
+      },
+      {
+        name: 'Housing',
+        description: 'Rent, mortgage, and home utilities.',
+        icon: 'H',
+        color: 'color-purple',
+        type: 'expense',
+        isPredefined: true,
+      },
+      {
+        name: 'Transportation',
+        description: 'Fuel, transit, parking, and rideshare.',
+        icon: 'T',
+        color: 'color-blue',
+        type: 'expense',
+        isPredefined: true,
+      },
+      {
+        name: 'Health',
+        description: 'Medical visits, medication, and wellness costs.',
+        icon: 'M',
+        color: 'color-red',
+        type: 'expense',
+        isPredefined: true,
+      },
+    ];
+
+    const batch = writeBatch(db);
+
+    for (const category of starterCategories) {
+      const categoryRef = doc(this.categoryCollection);
+      batch.set(categoryRef, {
+        ...category,
+        userId,
+      });
+    }
+
+    await batch.commit();
   }
 
   async login(email: string, password: string): Promise<void> {
