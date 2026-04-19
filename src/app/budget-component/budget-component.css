@@ -122,9 +122,21 @@
   align-items: flex-start;
 }
 
+.budget-overview {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
 .budget-meta {
   justify-content: space-between;
   flex-wrap: wrap;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .budget-row h3,
@@ -294,6 +306,17 @@
   color: #eef2ff;
 }
 
+.mock-input option {
+  background: #17181d;
+  color: #eef2ff;
+}
+
+.mock-input:focus {
+  outline: 2px solid rgba(115, 143, 230, 0.55);
+  outline-offset: 2px;
+  border-color: rgba(115, 143, 230, 0.55);
+}
+
 .threshold-scale {
   display: flex;
   gap: 0.75rem;
@@ -337,5 +360,10 @@
   .panel-card {
     padding: 1.15rem;
     border-radius: 22px;
+  }
+
+  .row-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 }

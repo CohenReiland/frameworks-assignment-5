@@ -101,6 +101,12 @@ export class BudgetService {
   }
 
   async updateBudget(id: string, budget: Partial<Budget>): Promise<void> {
+    const existingBudget = await this.getBudgetById(id);
+
+    if (!existingBudget) {
+      throw new Error('Budget not found or access denied.');
+    }
+
     this.isLoading.set(true);
 
     try {
@@ -112,6 +118,12 @@ export class BudgetService {
   }
 
   async deleteBudget(id: string): Promise<void> {
+    const existingBudget = await this.getBudgetById(id);
+
+    if (!existingBudget) {
+      throw new Error('Budget not found or access denied.');
+    }
+
     this.isLoading.set(true);
 
     try {
