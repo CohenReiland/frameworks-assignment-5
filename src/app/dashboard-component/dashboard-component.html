@@ -89,28 +89,20 @@
               </div>
 
               <div class="pie-chart-wrapper mt-4">
-                <div class="pie-chart"></div>
+                <div class="pie-chart" [style.background]="pieChartGradient()"></div>
                 <div class="chart-legend">
-                  <div class="legend-item">
-                    <span class="legend-dot housing"></span>
-                    <span>Housing - 38%</span>
-                  </div>
-                  <div class="legend-item">
-                    <span class="legend-dot food"></span>
-                    <span>Food - 22%</span>
-                  </div>
-                  <div class="legend-item">
-                    <span class="legend-dot travel"></span>
-                    <span>Travel - 16%</span>
-                  </div>
-                  <div class="legend-item">
-                    <span class="legend-dot bills"></span>
-                    <span>Bills - 14%</span>
-                  </div>
-                  <div class="legend-item">
-                    <span class="legend-dot other"></span>
-                    <span>Other - 10%</span>
-                  </div>
+                  @if (categorySpendingData().length === 0) {
+                    <div class="legend-item">
+                      <span>No expense data for this month yet.</span>
+                    </div>
+                  }
+
+                  @for (item of categorySpendingData(); track item.name) {
+                    <div class="legend-item">
+                      <span class="legend-dot" [style.background]="item.color"></span>
+                      <span>{{ item.name }} - {{ item.percentage | number: '1.0-0' }}%</span>
+                    </div>
+                  }
                 </div>
               </div>
             </section>
@@ -126,34 +118,23 @@
               </div>
 
               <div class="bar-chart mt-4">
-                <div class="bar-group">
-                  <div class="bar-label">Jan</div>
-                  <div class="bars">
-                    <div class="bar income" style="height: 78%"></div>
-                    <div class="bar expense" style="height: 61%"></div>
+                @for (month of incomeExpenseTrend(); track month.key) {
+                  <div class="bar-group">
+                    <div class="bar-label">{{ month.label }}</div>
+                    <div class="bars">
+                      <div
+                        class="bar income"
+                        [style.height.%]="month.incomeHeight"
+                        [title]="'Income: $' + month.incomeAmount"
+                      ></div>
+                      <div
+                        class="bar expense"
+                        [style.height.%]="month.expenseHeight"
+                        [title]="'Expense: $' + month.expenseAmount"
+                      ></div>
+                    </div>
                   </div>
-                </div>
-                <div class="bar-group">
-                  <div class="bar-label">Feb</div>
-                  <div class="bars">
-                    <div class="bar income" style="height: 84%"></div>
-                    <div class="bar expense" style="height: 66%"></div>
-                  </div>
-                </div>
-                <div class="bar-group">
-                  <div class="bar-label">Mar</div>
-                  <div class="bars">
-                    <div class="bar income" style="height: 72%"></div>
-                    <div class="bar expense" style="height: 58%"></div>
-                  </div>
-                </div>
-                <div class="bar-group">
-                  <div class="bar-label">Apr</div>
-                  <div class="bars">
-                    <div class="bar income" style="height: 88%"></div>
-                    <div class="bar expense" style="height: 69%"></div>
-                  </div>
-                </div>
+                }
               </div>
 
               <div class="chart-legend inline mt-4">

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { Budget } from '../models/budget';
 import { NavbarComponent } from '../navbar-component/navbar-component';
 import { AuthService } from '../services/auth-service';
@@ -8,7 +9,7 @@ import { TransactionService } from '../services/transaction-service';
 @Component({
   selector: 'app-dashboard-component',
   standalone: true,
-  imports: [NavbarComponent],
+  imports: [NavbarComponent, DecimalPipe],
   templateUrl: './dashboard-component.html',
   styleUrl: './dashboard-component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +24,7 @@ export class DashboardComponent {
   protected readonly transactions = this.transactionService.transactions;
 
   private readonly currentMonthKey = new Date().toISOString().slice(0, 7);
+  private readonly chartPalette = ['#9b72ff', '#ff9b54', '#4e7dff', '#ff6e86', '#38c88f'];
 
   protected readonly isLoading = computed(
     () => this.budgetService.isLoading() || this.transactionService.isLoading(),
@@ -57,6 +59,109 @@ export class DashboardComponent {
     }
 
     return totals;
+  });
+
+  protected readonly categorySpendingData = computed(() => {
+    const categoryTotals = new Map<string, number>();
+
+    for (const transaction of this.currentMonthTransactions()) {
+      if (transaction.type !== 'expense') {
+        continue;
+      }
+
+      categoryTotals.set(
+        transaction.categoryName,
+        (categoryTotals.get(transaction.categoryName) ?? 0) + transaction.amount,
+      );
+    }
+
+    const totalExpenses = Array.from(categoryTotals.values()).reduce(
+      (sum, value) => sum + value,
+      0,
+    );
+
+    if (totalExpenses <= 0) {
+      return [];
+    }
+
+    return Array.from(categoryTotals.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, amount], index) => ({
+        name,
+        amount,
+        percentage: (amount / totalExpenses) * 100,
+        color: this.chartPalette[index % this.chartPalette.length],
+      }));
+  });
+
+  protected readonly pieChartGradient = computed(() => {
+    const data = this.categorySpendingData();
+
+    if (data.length === 0) {
+      return 'conic-gradient(#2e3445 0 100%)';
+    }
+
+    let cursor = 0;
+    const segments: string[] = [];
+
+    for (const item of data) {
+      const start = cursor;
+      const end = cursor + item.percentage;
+      segments.push(`${item.color} ${start}% ${end}%`);
+      cursor = end;
+    }
+
+    if (cursor < 100) {
+      segments.push(`#2e3445 ${cursor}% 100%`);
+    }
+
+    return `conic-gradient(${segments.join(', ')})`;
+  });
+
+  protected readonly incomeExpenseTrend = computed(() => {
+    const monthKeys = this.getRecentMonthKeys(4);
+    const monthTotals = new Map<string, { income: number; expense: number }>();
+
+    for (const monthKey of monthKeys) {
+      monthTotals.set(monthKey, { income: 0, expense: 0 });
+    }
+
+    for (const transaction of this.transactions()) {
+      const monthKey = transaction.date.slice(0, 7);
+      const monthData = monthTotals.get(monthKey);
+
+      if (!monthData) {
+        continue;
+      }
+
+      if (transaction.type === 'income') {
+        monthData.income += transaction.amount;
+      } else {
+        monthData.expense += transaction.amount;
+      }
+    }
+
+    const peakValue = Math.max(
+      1,
+      ...Array.from(monthTotals.values()).flatMap((monthData) => [
+        monthData.income,
+        monthData.expense,
+      ]),
+    );
+
+    return monthKeys.map((monthKey) => {
+      const totals = monthTotals.get(monthKey) ?? { income: 0, expense: 0 };
+
+      return {
+        key: monthKey,
+        label: this.getMonthShortLabel(monthKey),
+        incomeAmount: totals.income,
+        expenseAmount: totals.expense,
+        incomeHeight: totals.income > 0 ? (totals.income / peakValue) * 100 : 0,
+        expenseHeight: totals.expense > 0 ? (totals.expense / peakValue) * 100 : 0,
+      };
+    });
   });
 
   protected readonly monthlyIncome = computed(() =>
@@ -125,5 +230,27 @@ export class DashboardComponent {
 
   protected getBudgetKey(categoryId: string, month: string): string {
     return `${categoryId}|${month}`;
+  }
+
+  private getRecentMonthKeys(monthCount: number): string[] {
+    const monthKeys: string[] = [];
+    const today = new Date();
+
+    for (let offset = monthCount - 1; offset >= 0; offset -= 1) {
+      const dateValue = new Date(today.getFullYear(), today.getMonth() - offset, 1);
+      const year = dateValue.getFullYear();
+      const month = String(dateValue.getMonth() + 1).padStart(2, '0');
+      monthKeys.push(`${year}-${month}`);
+    }
+
+    return monthKeys;
+  }
+
+  private getMonthShortLabel(monthKey: string): string {
+    const [year, month] = monthKey.split('-').map(Number);
+
+    return new Date(year, month - 1, 1).toLocaleDateString('en-US', {
+      month: 'short',
+    });
   }
 }
