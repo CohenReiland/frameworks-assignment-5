@@ -101,6 +101,12 @@ export class TransactionService {
   }
 
   async updateTransaction(id: string, transaction: Partial<Transaction>): Promise<void> {
+    const existingTransaction = await this.getTransactionById(id);
+
+    if (!existingTransaction) {
+      throw new Error('Transaction not found or access denied.');
+    }
+
     this.isLoading.set(true);
 
     try {
@@ -112,6 +118,12 @@ export class TransactionService {
   }
 
   async deleteTransaction(id: string): Promise<void> {
+    const existingTransaction = await this.getTransactionById(id);
+
+    if (!existingTransaction) {
+      throw new Error('Transaction not found or access denied.');
+    }
+
     this.isLoading.set(true);
 
     try {

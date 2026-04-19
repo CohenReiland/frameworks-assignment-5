@@ -116,6 +116,8 @@
 }
 
 .mock-input {
+  box-sizing: border-box;
+  min-width: 0;
   padding: 0.95rem 1rem;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.04);
@@ -123,11 +125,54 @@
   color: #eef2ff;
 }
 
+.mock-input option {
+  background: #17181d;
+  color: #eef2ff;
+}
+
+.mock-input:focus {
+  outline: 2px solid rgba(115, 143, 230, 0.55);
+  outline-offset: 2px;
+  border-color: rgba(115, 143, 230, 0.55);
+}
+
 .filter-card {
   padding: 1rem;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.filter-card .mock-input {
+  width: 100%;
+}
+
+.filter-toolbar {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+}
+
+.filter-slot {
+  min-width: 0;
+}
+
+.filter-search {
+  flex: 1.4;
+}
+
+.filter-category {
+  flex: 1;
+}
+
+.filter-date {
+  flex: 0.8;
+}
+
+.filter-date .mock-input {
+  width: 100%;
+  min-width: 0;
 }
 
 .type-toggle,
@@ -291,5 +336,15 @@
   .row-actions,
   .type-toggle {
     flex-direction: column;
+  }
+
+  .filter-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .filter-search,
+  .filter-category,
+  .filter-date {
+    flex: 1 1 100%;
   }
 }

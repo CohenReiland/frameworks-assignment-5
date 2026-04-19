@@ -6,23 +6,23 @@
         <p class="eyebrow mb-2">Expense & Income Tracking</p>
         <h1 class="page-title mb-2">Track transactions with filters and quick actions</h1>
         <p class="page-subtitle mb-0">
-          Add income and expenses, review recent activity, and narrow results with category, date,
-          and amount filters.
+          Add income and expenses, review recent activity, and narrow results with category and date
+          filters.
         </p>
       </div>
 
       <div class="overview-chips d-flex flex-wrap gap-3">
         <div class="stat-chip">
           <span class="stat-label">This Month Income</span>
-          <strong>$5,240</strong>
+          <strong>${{ thisMonthIncome() }}</strong>
         </div>
         <div class="stat-chip">
           <span class="stat-label">This Month Expenses</span>
-          <strong>$3,760</strong>
+          <strong>${{ thisMonthExpenses() }}</strong>
         </div>
         <div class="stat-chip accent">
           <span class="stat-label">Transactions</span>
-          <strong>28 Entries</strong>
+          <strong>{{ transactionCount() }} Entries</strong>
         </div>
       </div>
     </div>
@@ -32,9 +32,7 @@
         <aside class="panel-card sticky-panel">
           <div class="section-heading">
             <h2 class="section-title mb-1">Add Transaction</h2>
-            <p class="section-copy mb-0">
-              Static form preview for creating or editing an income or expense entry.
-            </p>
+            <p class="section-copy mb-0">Create, edit, and delete income or expense entries.</p>
           </div>
 
           <form
@@ -61,14 +59,19 @@
 
             <div class="mock-field">
               <label for="transactionCategory">Category</label>
-              <input
+              <select
                 id="transactionCategory"
                 class="mock-input"
-                type="text"
-                formControlName="categoryName"
-                placeholder="Food"
-              />
-              @if (submitted && transactionForm.controls.categoryName.invalid) {
+                formControlName="categoryId"
+                (change)="onCategoryChange(transactionForm.controls.categoryId.value)"
+              >
+                <option value="">Select a category</option>
+                @for (category of selectableCategories(); track category.id) {
+                  <option [value]="category.id">{{ category.name }}</option>
+                }
+              </select>
+
+              @if (submitted && transactionForm.controls.categoryId.invalid) {
                 <p class="field-error">Category is required.</p>
               }
             </div>
@@ -91,9 +94,14 @@
 
             <div class="mock-field">
               <label for="transactionType">Type</label>
-              <select id="transactionType" class="mock-input" formControlName="type">
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
+              <select
+                id="transactionType"
+                class="mock-input"
+                formControlName="type"
+                (change)="onTypeChange()"
+              >
+                <option value="income">Income (money in)</option>
+                <option value="expense">Expense (money out)</option>
               </select>
             </div>
 
@@ -107,14 +115,20 @@
                 type="submit"
                 [disabled]="isLoading()"
               >
-                {{ isLoading() ? 'Saving...' : 'Save Transaction' }}
+                {{
+                  isLoading()
+                    ? 'Saving...'
+                    : isEditing()
+                      ? 'Update Transaction'
+                      : 'Save Transaction'
+                }}
               </button>
               <button
                 class="btn btn-outline-light rounded-pill px-4 py-3 flex-fill"
                 type="button"
-                (click)="resetTransactionForm()"
+                (click)="isEditing() ? cancelEdit() : resetTransactionForm()"
               >
-                Clear
+                {{ isEditing() ? 'Cancel Edit' : 'Clear' }}
               </button>
             </div>
           </form>
@@ -129,38 +143,63 @@
             <div>
               <h2 class="section-title mb-1">Search & Filters</h2>
               <p class="section-copy mb-0">
-                Filter transactions by date range, category, and amount range.
+                Filter transactions by search text, category, and date range.
               </p>
             </div>
-            <button class="btn btn-outline-light rounded-pill px-4">Reset Filters</button>
+            <button
+              class="btn btn-outline-light rounded-pill px-4"
+              type="button"
+              (click)="resetFilters()"
+            >
+              Reset Filters
+            </button>
           </div>
 
-          <div class="row g-3 mt-2">
-            <div class="col-md-6 col-lg-3">
+          <form class="filter-toolbar mt-3" [formGroup]="filterForm">
+            <div class="filter-slot filter-search">
               <div class="filter-card">
-                <label>Date From</label>
-                <div class="mock-input">April 1, 2026</div>
+                <label for="filterSearchText">Search</label>
+                <input
+                  id="filterSearchText"
+                  class="mock-input"
+                  type="text"
+                  formControlName="searchText"
+                  placeholder="Category or notes"
+                />
               </div>
             </div>
-            <div class="col-md-6 col-lg-3">
+
+            <div class="filter-slot filter-category">
               <div class="filter-card">
-                <label>Date To</label>
-                <div class="mock-input">April 30, 2026</div>
+                <label for="filterCategory">Category</label>
+                <select id="filterCategory" class="mock-input" formControlName="categoryId">
+                  <option value="">All Categories</option>
+                  @for (category of categories(); track category.id) {
+                    <option [value]="category.id">{{ category.name }}</option>
+                  }
+                </select>
               </div>
             </div>
-            <div class="col-md-6 col-lg-3">
+
+            <div class="filter-slot filter-date">
               <div class="filter-card">
-                <label>Category</label>
-                <div class="mock-input">All Categories</div>
+                <label for="filterDateFrom">Date From</label>
+                <input
+                  id="filterDateFrom"
+                  class="mock-input"
+                  type="date"
+                  formControlName="dateFrom"
+                />
               </div>
             </div>
-            <div class="col-md-6 col-lg-3">
+
+            <div class="filter-slot filter-date">
               <div class="filter-card">
-                <label>Amount Range</label>
-                <div class="mock-input">$0 - $500</div>
+                <label for="filterDateTo">Date To</label>
+                <input id="filterDateTo" class="mock-input" type="date" formControlName="dateTo" />
               </div>
             </div>
-          </div>
+          </form>
         </section>
 
         <section class="panel-card">
@@ -170,14 +209,18 @@
             <div>
               <h2 class="section-title mb-1">Recent Transactions</h2>
               <p class="section-copy mb-0">
-                Mock list of transactions with edit and delete actions.
+                Filtered list of your transactions with edit and delete actions.
               </p>
             </div>
             <span class="section-badge">Sorted by Newest</span>
           </div>
 
           <div class="transaction-list mt-4">
-            @for (transaction of transactions(); track transaction.id) {
+            @if (filteredTransactions().length === 0) {
+              <p class="section-copy mb-0">No transactions match the current filters.</p>
+            }
+
+            @for (transaction of filteredTransactions(); track transaction.id) {
               <article class="transaction-row">
                 <div class="transaction-main">
                   <div class="transaction-icon" [class]="'transaction-icon ' + transaction.type">
@@ -196,10 +239,18 @@
                     {{ transaction.type === 'income' ? '+' : '-' }}${{ transaction.amount }}
                   </strong>
                   <div class="row-actions">
-                    <button class="btn btn-sm btn-outline-light rounded-pill" type="button">
+                    <button
+                      class="btn btn-sm btn-outline-light rounded-pill"
+                      type="button"
+                      (click)="startEditTransaction(transaction)"
+                    >
                       Edit
                     </button>
-                    <button class="btn btn-sm btn-outline-danger rounded-pill" type="button">
+                    <button
+                      class="btn btn-sm btn-outline-danger rounded-pill"
+                      type="button"
+                      (click)="deleteTransaction(transaction.id)"
+                    >
                       Delete
                     </button>
                   </div>
