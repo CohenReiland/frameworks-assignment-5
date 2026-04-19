@@ -21,6 +21,7 @@ export class TransactionsComponent {
   protected submitted = false;
   protected transactionError = '';
   protected readonly editingTransactionId = signal<string | null>(null);
+  protected readonly selectedType = signal<CategoryType>('expense');
 
   protected readonly transactions = this.transactionService.transactions;
   protected readonly isLoading = this.transactionService.isLoading;
@@ -46,7 +47,7 @@ export class TransactionsComponent {
   protected readonly transactionCount = computed(() => this.transactions().length);
 
   protected readonly selectableCategories = computed(() => {
-    const selectedType = this.transactionForm.controls.type.value;
+    const selectedType = this.selectedType();
 
     return this.categories()
       .filter((category) => category.type === selectedType)
@@ -135,6 +136,8 @@ export class TransactionsComponent {
   }
 
   protected onTypeChange(): void {
+    this.selectedType.set(this.transactionForm.controls.type.value);
+
     const selectedCategoryId = this.transactionForm.controls.categoryId.value;
     const isSelectedCategoryStillValid = this.selectableCategories().some(
       (category) => category.id === selectedCategoryId,
@@ -150,6 +153,7 @@ export class TransactionsComponent {
 
   protected startEditTransaction(transaction: Transaction): void {
     this.editingTransactionId.set(transaction.id);
+    this.selectedType.set(transaction.type);
     this.submitted = false;
     this.transactionError = '';
     this.transactionForm.setValue({
@@ -194,6 +198,7 @@ export class TransactionsComponent {
 
   protected resetTransactionForm(): void {
     this.editingTransactionId.set(null);
+    this.selectedType.set('expense');
     this.transactionForm.reset({
       amount: 0,
       categoryId: '',
