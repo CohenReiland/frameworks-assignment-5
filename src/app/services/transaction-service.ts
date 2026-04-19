@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import {
   addDoc,
   collection,
@@ -6,10 +6,13 @@ import {
   doc,
   getDoc,
   onSnapshot,
+  query,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { Transaction } from '../models/transaction';
+import { AuthService } from './auth-service';
 
 @Injectable({
   providedIn: 'root',
@@ -18,14 +21,27 @@ export class TransactionService {
   readonly transactions = signal<Transaction[]>([]);
   readonly isLoading = signal(false);
 
+  private readonly authService = inject(AuthService);
   private readonly transactionCollection = collection(db, 'transactions');
+  private unsubscribeFromTransactions: (() => void) | null = null;
 
   constructor() {
-    this.loadTransactions();
+    effect(() => {
+      this.loadTransactionsForUser(this.authService.currentUser()?.id ?? null);
+    });
   }
 
-  loadTransactions(): void {
-    onSnapshot(this.transactionCollection, (snapshot) => {
+  private loadTransactionsForUser(userId: string | null): void {
+    this.unsubscribeFromTransactions?.();
+
+    if (!userId) {
+      this.transactions.set([]);
+      return;
+    }
+
+    const transactionQuery = query(this.transactionCollection, where('userId', '==', userId));
+
+    this.unsubscribeFromTransactions = onSnapshot(transactionQuery, (snapshot) => {
       const data = snapshot.docs.map((transactionDoc) => {
         const transactionData = transactionDoc.data() as Omit<Transaction, 'id'>;
 
@@ -40,6 +56,12 @@ export class TransactionService {
   }
 
   async getTransactionById(id: string): Promise<Transaction | null> {
+    const currentUserId = this.authService.currentUser()?.id;
+
+    if (!currentUserId) {
+      return null;
+    }
+
     const transactionRef = doc(db, 'transactions', id);
     const snapshot = await getDoc(transactionRef);
 
@@ -49,17 +71,30 @@ export class TransactionService {
 
     const transactionData = snapshot.data() as Omit<Transaction, 'id'>;
 
+    if (transactionData.userId !== currentUserId) {
+      return null;
+    }
+
     return {
       ...transactionData,
       id: snapshot.id,
     };
   }
 
-  async addTransaction(transaction: Omit<Transaction, 'id'>): Promise<void> {
+  async addTransaction(transaction: Omit<Transaction, 'id' | 'userId'>): Promise<void> {
+    const currentUserId = this.authService.currentUser()?.id;
+
+    if (!currentUserId) {
+      throw new Error('You must be logged in to add a transaction.');
+    }
+
     this.isLoading.set(true);
 
     try {
-      await addDoc(this.transactionCollection, transaction);
+      await addDoc(this.transactionCollection, {
+        ...transaction,
+        userId: currentUserId,
+      });
     } finally {
       this.isLoading.set(false);
     }

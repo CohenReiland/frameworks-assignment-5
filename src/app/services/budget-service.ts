@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import {
   addDoc,
   collection,
@@ -6,10 +6,13 @@ import {
   doc,
   getDoc,
   onSnapshot,
+  query,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { Budget } from '../models/budget';
+import { AuthService } from './auth-service';
 
 @Injectable({
   providedIn: 'root',
@@ -18,14 +21,27 @@ export class BudgetService {
   readonly budgets = signal<Budget[]>([]);
   readonly isLoading = signal(false);
 
+  private readonly authService = inject(AuthService);
   private readonly budgetCollection = collection(db, 'budgets');
+  private unsubscribeFromBudgets: (() => void) | null = null;
 
   constructor() {
-    this.loadBudgets();
+    effect(() => {
+      this.loadBudgetsForUser(this.authService.currentUser()?.id ?? null);
+    });
   }
 
-  loadBudgets(): void {
-    onSnapshot(this.budgetCollection, (snapshot) => {
+  private loadBudgetsForUser(userId: string | null): void {
+    this.unsubscribeFromBudgets?.();
+
+    if (!userId) {
+      this.budgets.set([]);
+      return;
+    }
+
+    const budgetQuery = query(this.budgetCollection, where('userId', '==', userId));
+
+    this.unsubscribeFromBudgets = onSnapshot(budgetQuery, (snapshot) => {
       const data = snapshot.docs.map((budgetDoc) => {
         const budgetData = budgetDoc.data() as Omit<Budget, 'id'>;
 
@@ -40,6 +56,12 @@ export class BudgetService {
   }
 
   async getBudgetById(id: string): Promise<Budget | null> {
+    const currentUserId = this.authService.currentUser()?.id;
+
+    if (!currentUserId) {
+      return null;
+    }
+
     const budgetRef = doc(db, 'budgets', id);
     const snapshot = await getDoc(budgetRef);
 
@@ -49,17 +71,30 @@ export class BudgetService {
 
     const budgetData = snapshot.data() as Omit<Budget, 'id'>;
 
+    if (budgetData.userId !== currentUserId) {
+      return null;
+    }
+
     return {
       ...budgetData,
       id: snapshot.id,
     };
   }
 
-  async addBudget(budget: Omit<Budget, 'id'>): Promise<void> {
+  async addBudget(budget: Omit<Budget, 'id' | 'userId'>): Promise<void> {
+    const currentUserId = this.authService.currentUser()?.id;
+
+    if (!currentUserId) {
+      throw new Error('You must be logged in to add a budget.');
+    }
+
     this.isLoading.set(true);
 
     try {
-      await addDoc(this.budgetCollection, budget);
+      await addDoc(this.budgetCollection, {
+        ...budget,
+        userId: currentUserId,
+      });
     } finally {
       this.isLoading.set(false);
     }
