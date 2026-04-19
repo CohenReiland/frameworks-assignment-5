@@ -5,12 +5,14 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   query,
   updateDoc,
   where,
 } from 'firebase/firestore';
 import { db } from '../firebase.config';
+import { Budget } from '../models/budget';
 import { Transaction } from '../models/transaction';
 import { AuthService } from './auth-service';
 
@@ -23,6 +25,7 @@ export class TransactionService {
 
   private readonly authService = inject(AuthService);
   private readonly transactionCollection = collection(db, 'transactions');
+  private readonly budgetCollection = collection(db, 'budgets');
   private unsubscribeFromTransactions: (() => void) | null = null;
 
   constructor() {
@@ -95,6 +98,14 @@ export class TransactionService {
         ...transaction,
         userId: currentUserId,
       });
+
+      if (transaction.type === 'expense') {
+        await this.recalculateBudgetSpentForCategoryMonth(
+          currentUserId,
+          transaction.categoryId,
+          this.getMonthKey(transaction.date),
+        );
+      }
     } finally {
       this.isLoading.set(false);
     }
@@ -112,6 +123,42 @@ export class TransactionService {
     try {
       const transactionRef = doc(db, 'transactions', id);
       await updateDoc(transactionRef, transaction);
+
+      const currentUserId = this.authService.currentUser()?.id;
+
+      if (!currentUserId) {
+        return;
+      }
+
+      const impactedKeys = new Set<string>();
+
+      if (existingTransaction.type === 'expense') {
+        impactedKeys.add(
+          this.getBudgetImpactKey(
+            existingTransaction.categoryId,
+            this.getMonthKey(existingTransaction.date),
+          ),
+        );
+      }
+
+      const updatedTransaction: Transaction = {
+        ...existingTransaction,
+        ...transaction,
+      };
+
+      if (updatedTransaction.type === 'expense') {
+        impactedKeys.add(
+          this.getBudgetImpactKey(
+            updatedTransaction.categoryId,
+            this.getMonthKey(updatedTransaction.date),
+          ),
+        );
+      }
+
+      for (const key of impactedKeys) {
+        const [categoryId, month] = key.split('|');
+        await this.recalculateBudgetSpentForCategoryMonth(currentUserId, categoryId, month);
+      }
     } finally {
       this.isLoading.set(false);
     }
@@ -129,8 +176,70 @@ export class TransactionService {
     try {
       const transactionRef = doc(db, 'transactions', id);
       await deleteDoc(transactionRef);
+
+      const currentUserId = this.authService.currentUser()?.id;
+
+      if (!currentUserId || existingTransaction.type !== 'expense') {
+        return;
+      }
+
+      await this.recalculateBudgetSpentForCategoryMonth(
+        currentUserId,
+        existingTransaction.categoryId,
+        this.getMonthKey(existingTransaction.date),
+      );
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  private getMonthKey(dateText: string): string {
+    return dateText.slice(0, 7);
+  }
+
+  private getBudgetImpactKey(categoryId: string, month: string): string {
+    return `${categoryId}|${month}`;
+  }
+
+  private async recalculateBudgetSpentForCategoryMonth(
+    userId: string,
+    categoryId: string,
+    month: string,
+  ): Promise<void> {
+    if (!categoryId || !month) {
+      return;
+    }
+
+    const userTransactionsSnapshot = await getDocs(
+      query(this.transactionCollection, where('userId', '==', userId)),
+    );
+
+    const totalSpentForMonth = userTransactionsSnapshot.docs
+      .map((transactionDoc) => transactionDoc.data() as Omit<Transaction, 'id'>)
+      .filter(
+        (transaction) =>
+          transaction.categoryId === categoryId &&
+          transaction.type === 'expense' &&
+          transaction.date.startsWith(month),
+      )
+      .reduce((total, transaction) => total + transaction.amount, 0);
+
+    const userBudgetsSnapshot = await getDocs(
+      query(this.budgetCollection, where('userId', '==', userId)),
+    );
+
+    const matchingBudgetDocs = userBudgetsSnapshot.docs.filter((budgetDoc) => {
+      const budgetData = budgetDoc.data() as Omit<Budget, 'id'>;
+
+      return budgetData.categoryId === categoryId && budgetData.month === month;
+    });
+
+    await Promise.all(
+      matchingBudgetDocs.map((budgetDoc) =>
+        updateDoc(doc(db, 'budgets', budgetDoc.id), {
+          spent: totalSpentForMonth,
+        }),
+      ),
+    );
   }
 }

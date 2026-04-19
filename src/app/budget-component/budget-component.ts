@@ -6,6 +6,7 @@ import { Budget } from '../models/budget';
 import { NavbarComponent } from '../navbar-component/navbar-component';
 import { BudgetService } from '../services/budget-service';
 import { CategoryService } from '../services/category-service';
+import { TransactionService } from '../services/transaction-service';
 
 @Component({
   selector: 'app-budget-component',
@@ -18,6 +19,7 @@ export class BudgetComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly budgetService = inject(BudgetService);
   private readonly categoryService = inject(CategoryService);
+  private readonly transactionService = inject(TransactionService);
 
   protected submitted = false;
   protected budgetError = '';
@@ -26,27 +28,43 @@ export class BudgetComponent {
   protected readonly budgets = this.budgetService.budgets;
   protected readonly isLoading = this.budgetService.isLoading;
   protected readonly categories = this.categoryService.categories;
+  protected readonly transactions = this.transactionService.transactions;
+
+  protected readonly spentByCategoryMonth = computed(() => {
+    const totals = new Map<string, number>();
+
+    for (const transaction of this.transactions()) {
+      if (transaction.type !== 'expense') {
+        continue;
+      }
+
+      const key = this.getBudgetKey(transaction.categoryId, transaction.date.slice(0, 7));
+      totals.set(key, (totals.get(key) ?? 0) + transaction.amount);
+    }
+
+    return totals;
+  });
 
   protected readonly totalMonthlyBudget = computed(() =>
     this.budgets().reduce((sum, budget) => sum + budget.limit, 0),
   );
 
   protected readonly totalSpentSoFar = computed(() =>
-    this.budgets().reduce((sum, budget) => sum + budget.spent, 0),
+    this.budgets().reduce((sum, budget) => sum + this.getBudgetSpent(budget), 0),
   );
 
   protected readonly activeAlertCount = computed(
     () =>
       this.budgets().filter((budget) => {
         const thresholdAmount = budget.limit * (budget.alertThreshold / 100);
-        return budget.spent >= thresholdAmount;
+        return this.getBudgetSpent(budget) >= thresholdAmount;
       }).length,
   );
 
   protected readonly alertBudgets = computed(() =>
     this.budgets().filter((budget) => {
       const thresholdAmount = budget.limit * (budget.alertThreshold / 100);
-      return budget.spent >= thresholdAmount;
+      return this.getBudgetSpent(budget) >= thresholdAmount;
     }),
   );
 
@@ -132,6 +150,25 @@ export class BudgetComponent {
     }
   }
 
+  protected getBudgetSpent(budget: Budget): number {
+    const key = this.getBudgetKey(budget.categoryId, budget.month);
+    return this.spentByCategoryMonth().get(key) ?? 0;
+  }
+
+  protected getBudgetUsagePercent(budget: Budget): number {
+    const spent = this.getBudgetSpent(budget);
+
+    if (budget.limit <= 0) {
+      return 0;
+    }
+
+    return (spent / budget.limit) * 100;
+  }
+
+  protected getBudgetRemaining(budget: Budget): number {
+    return budget.limit - this.getBudgetSpent(budget);
+  }
+
   private syncCategoryFromSelection(categoryId: string): void {
     const selectedCategory = this.selectableCategories().find(
       (category) => category.id === categoryId,
@@ -145,6 +182,10 @@ export class BudgetComponent {
       categoryId: selectedCategory.id,
       categoryName: selectedCategory.name,
     });
+  }
+
+  private getBudgetKey(categoryId: string, month: string): string {
+    return `${categoryId}|${month}`;
   }
 
   private resetForm(): void {

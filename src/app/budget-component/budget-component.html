@@ -62,7 +62,7 @@
                     <div class="budget-icon blue">{{ budget.categoryName.charAt(0) }}</div>
                     <div>
                       <h3>{{ budget.categoryName }}</h3>
-                      <p>Spent ${{ budget.spent }} of ${{ budget.limit }} this month.</p>
+                      <p>Spent ${{ getBudgetSpent(budget) }} of ${{ budget.limit }} this month.</p>
                     </div>
                   </div>
                   <div class="row-actions">
@@ -85,33 +85,37 @@
                 <div class="budget-status">
                   <span
                     class="status-pill"
-                    [class.good]="budget.spent <= budget.limit * 0.8"
-                    [class.warn]="budget.spent > budget.limit * 0.8 && budget.spent <= budget.limit"
-                    [class.danger]="budget.spent > budget.limit"
+                    [class.good]="getBudgetSpent(budget) <= budget.limit * 0.8"
+                    [class.warn]="
+                      getBudgetSpent(budget) > budget.limit * 0.8 &&
+                      getBudgetSpent(budget) <= budget.limit
+                    "
+                    [class.danger]="getBudgetSpent(budget) > budget.limit"
                   >
                     {{
-                      budget.spent > budget.limit
+                      getBudgetSpent(budget) > budget.limit
                         ? 'Exceeded'
-                        : ((budget.spent / budget.limit) * 100 | number: '1.0-0') + '% Used'
+                        : (getBudgetUsagePercent(budget) | number: '1.0-0') + '% Used'
                     }}
                   </span>
                   <div class="budget-amount">
                     {{
-                      budget.spent > budget.limit
-                        ? 'Over by $' + (budget.spent - budget.limit)
-                        : '$' + (budget.limit - budget.spent) + ' left'
+                      getBudgetSpent(budget) > budget.limit
+                        ? 'Over by $' + (getBudgetSpent(budget) - budget.limit)
+                        : '$' + getBudgetRemaining(budget) + ' left'
                     }}
                   </div>
                 </div>
                 <div class="progress budget-progress">
                   <div
                     class="progress-bar"
-                    [class.progress-good]="budget.spent <= budget.limit * 0.8"
+                    [class.progress-good]="getBudgetSpent(budget) <= budget.limit * 0.8"
                     [class.progress-warn]="
-                      budget.spent > budget.limit * 0.8 && budget.spent <= budget.limit
+                      getBudgetSpent(budget) > budget.limit * 0.8 &&
+                      getBudgetSpent(budget) <= budget.limit
                     "
-                    [class.progress-danger]="budget.spent > budget.limit"
-                    [style.width.%]="budget.limit > 0 ? (budget.spent / budget.limit) * 100 : 0"
+                    [class.progress-danger]="getBudgetSpent(budget) > budget.limit"
+                    [style.width.%]="getBudgetUsagePercent(budget)"
                   ></div>
                 </div>
               </article>
@@ -143,20 +147,22 @@
               <div class="col-md-6">
                 <article
                   class="alert-card"
-                  [class.alert-danger]="budget.spent > budget.limit"
-                  [class.alert-warn]="budget.spent <= budget.limit"
+                  [class.alert-danger]="getBudgetSpent(budget) > budget.limit"
+                  [class.alert-warn]="getBudgetSpent(budget) <= budget.limit"
                 >
                   <span class="alert-label">
-                    {{ budget.spent > budget.limit ? 'Budget Exceeded' : 'Nearing Limit' }}
+                    {{
+                      getBudgetSpent(budget) > budget.limit ? 'Budget Exceeded' : 'Nearing Limit'
+                    }}
                   </span>
                   <h3>{{ budget.categoryName }}</h3>
                   <p>
                     {{
-                      budget.spent > budget.limit
-                        ? 'Over by $' + (budget.spent - budget.limit) + ' this month.'
-                        : ((budget.spent / budget.limit) * 100 | number: '1.0-0') +
+                      getBudgetSpent(budget) > budget.limit
+                        ? 'Over by $' + (getBudgetSpent(budget) - budget.limit) + ' this month.'
+                        : (getBudgetUsagePercent(budget) | number: '1.0-0') +
                           '% used with $' +
-                          (budget.limit - budget.spent) +
+                          getBudgetRemaining(budget) +
                           ' left.'
                     }}
                   </p>
@@ -234,7 +240,11 @@
                 min="0"
                 step="0.01"
                 placeholder="0"
+                readonly
               />
+              <p class="section-copy mb-0">
+                This value is auto-calculated from expense transactions.
+              </p>
             </div>
 
             <div class="mock-field">
