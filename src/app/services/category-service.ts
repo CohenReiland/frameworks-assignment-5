@@ -101,6 +101,12 @@ export class CategoryService {
   }
 
   async updateCategory(id: string, category: Partial<Category>): Promise<void> {
+    const existingCategory = await this.getCategoryById(id);
+
+    if (!existingCategory) {
+      throw new Error('Category not found or access denied.');
+    }
+
     this.isLoading.set(true);
 
     try {
@@ -112,6 +118,12 @@ export class CategoryService {
   }
 
   async deleteCategory(id: string): Promise<void> {
+    const existingCategory = await this.getCategoryById(id);
+
+    if (!existingCategory) {
+      throw new Error('Category not found or access denied.');
+    }
+
     this.isLoading.set(true);
 
     try {

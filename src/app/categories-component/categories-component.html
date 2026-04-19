@@ -16,11 +16,11 @@
       <div class="header-stats d-flex flex-wrap gap-3">
         <div class="stat-chip">
           <span class="stat-label">Predefined</span>
-          <strong>8 Categories</strong>
+          <strong>{{ predefinedCategories().length }} Categories</strong>
         </div>
         <div class="stat-chip">
           <span class="stat-label">Custom</span>
-          <strong>4 Categories</strong>
+          <strong>{{ customCategories().length }} Categories</strong>
         </div>
       </div>
     </div>
@@ -34,67 +34,32 @@
             <div>
               <h2 class="section-title mb-1">Predefined Categories</h2>
               <p class="section-copy mb-0">
-                Ready-to-use groups for common transactions and budgeting workflows.
+                Ready-to-use groups for common transactions and budgeting workflows in your account.
               </p>
             </div>
             <span class="section-badge">Built In</span>
           </div>
 
           <div class="row g-3 mt-2">
-            <div class="col-md-6">
-              <article class="category-card">
-                <div class="category-icon color-green">+</div>
-                <div>
-                  <h3>Income</h3>
-                  <p>Salary, freelance payments, reimbursements, and other incoming funds.</p>
-                </div>
-              </article>
-            </div>
-            <div class="col-md-6">
-              <article class="category-card">
-                <div class="category-icon color-red">-</div>
-                <div>
-                  <h3>Bills</h3>
-                  <p>Utilities, internet, rent, subscriptions, and recurring monthly costs.</p>
-                </div>
-              </article>
-            </div>
-            <div class="col-md-6">
-              <article class="category-card">
-                <div class="category-icon color-blue">C</div>
-                <div>
-                  <h3>Transportation</h3>
-                  <p>Gas, rideshare trips, parking, transit passes, and vehicle upkeep.</p>
-                </div>
-              </article>
-            </div>
-            <div class="col-md-6">
-              <article class="category-card">
-                <div class="category-icon color-orange">F</div>
-                <div>
-                  <h3>Food</h3>
-                  <p>Groceries, dining out, coffee runs, and meal delivery purchases.</p>
-                </div>
-              </article>
-            </div>
-            <div class="col-md-6">
-              <article class="category-card">
-                <div class="category-icon color-purple">H</div>
-                <div>
-                  <h3>Housing</h3>
-                  <p>Mortgage, repairs, furniture, supplies, and household essentials.</p>
-                </div>
-              </article>
-            </div>
-            <div class="col-md-6">
-              <article class="category-card">
-                <div class="category-icon color-cyan">M</div>
-                <div>
-                  <h3>Medical</h3>
-                  <p>Insurance copays, prescriptions, visits, and wellness-related costs.</p>
-                </div>
-              </article>
-            </div>
+            @if (predefinedCategories().length === 0) {
+              <div class="col-12">
+                <p class="section-copy mb-0">No predefined categories available yet.</p>
+              </div>
+            }
+
+            @for (category of predefinedCategories(); track category.id) {
+              <div class="col-md-6">
+                <article class="category-card">
+                  <div class="category-icon" [class]="'category-icon ' + category.color">
+                    {{ category.icon }}
+                  </div>
+                  <div>
+                    <h3>{{ category.name }}</h3>
+                    <p>{{ category.description || 'No description provided.' }}</p>
+                  </div>
+                </article>
+              </div>
+            }
           </div>
         </section>
 
@@ -108,28 +73,56 @@
                 Custom groups you can create for personal goals, hobbies, or special budgets.
               </p>
             </div>
-            <button class="btn btn-outline-light rounded-pill px-4">Add Category</button>
+            @if (isEditing()) {
+              <button
+                class="btn btn-outline-light rounded-pill px-4"
+                type="button"
+                (click)="cancelEdit()"
+              >
+                Cancel Edit
+              </button>
+            }
           </div>
 
           <div class="custom-list mt-4">
-            @for (category of categories(); track category.id) {
-              @if (!category.isPredefined) {
-                <article class="custom-category-row">
-                  <div class="custom-meta">
-                    <div class="category-icon" [class]="'category-icon ' + category.color">
-                      {{ category.icon }}
-                    </div>
-                    <div>
-                      <h3>{{ category.name }}</h3>
-                      <p>{{ category.description || 'No description provided.' }}</p>
-                    </div>
+            @if (customCategories().length === 0) {
+              <p class="section-copy mb-0">No custom categories yet. Add one from the form.</p>
+            }
+
+            @for (category of customCategories(); track category.id) {
+              <article class="custom-category-row">
+                <div class="custom-meta">
+                  <div class="category-icon" [class]="'category-icon ' + category.color">
+                    {{ category.icon }}
                   </div>
+                  <div>
+                    <h3>{{ category.name }}</h3>
+                    <p>{{ category.description || 'No description provided.' }}</p>
+                  </div>
+                </div>
+                <div class="category-actions">
                   <div class="category-tags">
                     <span class="tag-pill">Custom</span>
-                    <span class="tag-pill">{{ category.type }}</span>
+                    <span class="tag-pill text-capitalize">{{ category.type }}</span>
                   </div>
-                </article>
-              }
+                  <div class="row-actions">
+                    <button
+                      class="btn btn-sm btn-outline-light rounded-pill px-3"
+                      type="button"
+                      (click)="startEditCategory(category)"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                      type="button"
+                      (click)="deleteCategory(category.id)"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </article>
             }
           </div>
         </section>
@@ -145,11 +138,23 @@
           </div>
 
           <div class="preview-card mt-4">
-            <div class="preview-icon color-blue">N</div>
+            <div
+              class="preview-icon"
+              [class]="'preview-icon ' + (categoryForm.controls.color.value || 'color-blue')"
+            >
+              {{ categoryForm.controls.icon.value || 'N' }}
+            </div>
             <div>
               <p class="preview-label mb-1">Live Preview</p>
-              <h3 class="preview-title mb-1">New Category</h3>
-              <p class="preview-copy mb-0">Choose a bold icon and a color that stands out.</p>
+              <h3 class="preview-title mb-1">
+                {{ categoryForm.controls.name.value || 'New Category' }}
+              </h3>
+              <p class="preview-copy mb-0">
+                {{
+                  categoryForm.controls.description.value ||
+                    'Choose an icon and color that stands out.'
+                }}
+              </p>
             </div>
           </div>
 
@@ -197,20 +202,18 @@
 
             <div class="mock-field">
               <label for="categoryColor">Choose Color Class</label>
-              <input
-                id="categoryColor"
-                class="mock-input"
-                type="text"
-                formControlName="color"
-                placeholder="color-blue"
-              />
+              <select id="categoryColor" class="mock-input" formControlName="color">
+                @for (color of colorOptions; track color.value) {
+                  <option [value]="color.value">{{ color.label }}</option>
+                }
+              </select>
             </div>
 
             <div class="mock-field">
               <label for="categoryType">Type</label>
               <select id="categoryType" class="mock-input" formControlName="type">
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
+                <option value="expense">Expense (money out)</option>
+                <option value="income">Income (money in)</option>
               </select>
             </div>
 
@@ -223,8 +226,18 @@
               type="submit"
               [disabled]="isLoading()"
             >
-              {{ isLoading() ? 'Saving...' : 'Save Category' }}
+              {{ isLoading() ? 'Saving...' : isEditing() ? 'Update Category' : 'Save Category' }}
             </button>
+
+            @if (isEditing()) {
+              <button
+                class="btn btn-outline-light w-100 rounded-pill py-3 mt-2"
+                type="button"
+                (click)="cancelEdit()"
+              >
+                Cancel Edit
+              </button>
+            }
           </form>
         </aside>
       </div>

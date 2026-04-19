@@ -213,11 +213,36 @@
   color: #eef2ff;
 }
 
+.mock-input option {
+  background: #17181d;
+  color: #eef2ff;
+}
+
+.mock-input:focus {
+  outline: 2px solid rgba(115, 143, 230, 0.55);
+  outline-offset: 2px;
+  border-color: rgba(115, 143, 230, 0.55);
+}
+
 .icon-picker,
 .color-picker {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+.category-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .icon-option,
@@ -313,5 +338,11 @@
 
   .custom-category-row {
     gap: 1rem;
+  }
+
+  .category-actions {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
   }
 }
