@@ -50,6 +50,13 @@
   transform: translateY(-1px);
 }
 
+.nav-logout-link {
+  margin-top: auto;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
 .nav-icon-link.active {
   color: #fff;
   background: linear-gradient(180deg, #3253c7 0%, #27419e 100%);
