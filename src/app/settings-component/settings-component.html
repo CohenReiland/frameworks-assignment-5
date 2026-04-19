@@ -1,1 +1,124 @@
-<p>settings-component works!</p>
+<app-navbar-component></app-navbar-component>
+<main class="page-with-navbar">
+  <section class="container-fluid px-0 settings-page">
+    <div class="page-header">
+      <p class="eyebrow mb-2">Account Settings</p>
+      <h1 class="page-title mb-2">Manage your profile and security</h1>
+      <p class="page-subtitle mb-0">Update your name, email, and password for your account.</p>
+    </div>
+
+    <div class="row g-4 mt-1">
+      <div class="col-xl-7">
+        <section class="panel-card">
+          <div class="section-heading mb-4">
+            <h2 class="section-title mb-1">Profile Management</h2>
+            <p class="section-copy mb-0">Keep your account details up to date.</p>
+          </div>
+
+          <form
+            [formGroup]="profileForm"
+            (ngSubmit)="saveProfile()"
+            novalidate
+            class="settings-form"
+          >
+            <div class="form-field">
+              <label for="settingsFullName">Full Name</label>
+              <input
+                id="settingsFullName"
+                class="form-input"
+                type="text"
+                formControlName="fullName"
+                placeholder="Your full name"
+              />
+              @if (profileSubmitted && profileForm.controls.fullName.invalid) {
+                <p class="field-error">Enter a valid name (at least 2 characters).</p>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="settingsEmail">Email</label>
+              <input
+                id="settingsEmail"
+                class="form-input"
+                type="email"
+                formControlName="email"
+                placeholder="you@example.com"
+              />
+              @if (profileSubmitted && profileForm.controls.email.invalid) {
+                <p class="field-error">Enter a valid email address.</p>
+              }
+            </div>
+
+            @if (profileError) {
+              <p class="field-error">{{ profileError }}</p>
+            }
+
+            @if (profileSuccess) {
+              <p class="field-success">{{ profileSuccess }}</p>
+            }
+
+            <button class="btn btn-primary rounded-pill px-4 py-3 save-button" type="submit">
+              Save Profile
+            </button>
+          </form>
+        </section>
+      </div>
+
+      <div class="col-xl-5">
+        <section class="panel-card">
+          <div class="section-heading mb-4">
+            <h2 class="section-title mb-1">Password</h2>
+            <p class="section-copy mb-0">Choose a strong password to protect your account.</p>
+          </div>
+
+          <form
+            [formGroup]="passwordForm"
+            (ngSubmit)="savePassword()"
+            novalidate
+            class="settings-form"
+          >
+            <div class="form-field">
+              <label for="settingsPassword">New Password</label>
+              <input
+                id="settingsPassword"
+                class="form-input"
+                type="password"
+                formControlName="newPassword"
+                placeholder="At least 6 characters"
+              />
+              @if (passwordSubmitted && passwordForm.controls.newPassword.invalid) {
+                <p class="field-error">Password must be at least 6 characters.</p>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="settingsConfirmPassword">Confirm Password</label>
+              <input
+                id="settingsConfirmPassword"
+                class="form-input"
+                type="password"
+                formControlName="confirmPassword"
+                placeholder="Re-enter new password"
+              />
+              @if (passwordSubmitted && passwordForm.controls.confirmPassword.invalid) {
+                <p class="field-error">Please confirm your password.</p>
+              }
+            </div>
+
+            @if (passwordError) {
+              <p class="field-error">{{ passwordError }}</p>
+            }
+
+            @if (passwordSuccess) {
+              <p class="field-success">{{ passwordSuccess }}</p>
+            }
+
+            <button class="btn btn-primary rounded-pill px-4 py-3 save-button" type="submit">
+              Update Password
+            </button>
+          </form>
+        </section>
+      </div>
+    </div>
+  </section>
+</main>

@@ -8,6 +8,7 @@ import { BudgetComponent } from './budget-component/budget-component';
 import { SignupComponent } from './signup-component/signup-component';
 import { LoginComponent } from './login-component/login-component';
 import { auth } from './firebase.config';
+import { SettingsComponent } from './settings-component/settings-component';
 
 const resolveAuthUser = async (): Promise<boolean> =>
   new Promise((resolve) => {
@@ -71,6 +72,12 @@ export const routes: Routes = [
     path: 'budget',
     component: BudgetComponent,
     title: 'Budget',
+    canActivate: [authGuard],
+  },
+  {
+    path: 'settings',
+    component: SettingsComponent,
+    title: 'Settings',
     canActivate: [authGuard],
   },
 ];
