@@ -20,10 +20,6 @@
           <span class="stat-label">Income</span>
           <strong>${{ monthlyIncome() }}</strong>
         </div>
-        <div class="stat-chip accent">
-          <span class="stat-label">Budget Left</span>
-          <strong>${{ budgetLeft() }}</strong>
-        </div>
       </div>
     </div>
 
@@ -39,7 +35,7 @@
                 A quick look at how spending shifted across your main categories this month.
               </p>
             </div>
-            <span class="section-badge">April 2026</span>
+            <span class="section-badge">{{ currentMonthLabel() }}</span>
           </div>
 
           <div class="row g-3 mt-2">
@@ -49,7 +45,7 @@
                 <h3>{{ topCategory()?.categoryName || 'No data yet' }}</h3>
                 <p>
                   @if (topCategory()) {
-                    ${{ topCategory()!.spent }} spent this month
+                    ${{ getBudgetSpent(topCategory()!) }} spent this month
                   } @else {
                     Add budgets to view insights
                   }
@@ -69,7 +65,7 @@
                 <h3>{{ bestControlledCategory()?.categoryName || 'No data yet' }}</h3>
                 <p>
                   @if (bestControlledCategory()) {
-                    ${{ bestControlledCategory()!.spent }} of ${{
+                    ${{ getBudgetSpent(bestControlledCategory()!) }} of ${{
                       bestControlledCategory()!.limit
                     }}
                     used
@@ -180,7 +176,7 @@
           <div class="section-heading">
             <h2 class="section-title mb-1">Budget vs Actual</h2>
             <p class="section-copy mb-0">
-              Static comparison of planned category budgets against current spending.
+              Live comparison of planned category budgets against current spending.
             </p>
           </div>
 
@@ -190,18 +186,21 @@
                 <div class="comparison-top">
                   <div>
                     <h3>{{ budget.categoryName }}</h3>
-                    <p>Budget ${{ budget.limit }} - Actual ${{ budget.spent }}</p>
+                    <p>Budget ${{ budget.limit }} - Actual ${{ getBudgetSpent(budget) }}</p>
                   </div>
                   <span
                     class="status-pill"
-                    [class.good]="budget.spent <= budget.limit * 0.8"
-                    [class.warn]="budget.spent > budget.limit * 0.8 && budget.spent <= budget.limit"
-                    [class.danger]="budget.spent > budget.limit"
+                    [class.good]="getBudgetSpent(budget) <= budget.limit * 0.8"
+                    [class.warn]="
+                      getBudgetSpent(budget) > budget.limit * 0.8 &&
+                      getBudgetSpent(budget) <= budget.limit
+                    "
+                    [class.danger]="getBudgetSpent(budget) > budget.limit"
                   >
                     {{
-                      budget.spent > budget.limit
+                      getBudgetSpent(budget) > budget.limit
                         ? 'Over Budget'
-                        : budget.spent > budget.limit * 0.8
+                        : getBudgetSpent(budget) > budget.limit * 0.8
                           ? 'Near Limit'
                           : 'On Track'
                     }}
@@ -210,12 +209,13 @@
                 <div class="progress compare-progress">
                   <div
                     class="progress-bar"
-                    [class.progress-good]="budget.spent <= budget.limit * 0.8"
+                    [class.progress-good]="getBudgetSpent(budget) <= budget.limit * 0.8"
                     [class.progress-warn]="
-                      budget.spent > budget.limit * 0.8 && budget.spent <= budget.limit
+                      getBudgetSpent(budget) > budget.limit * 0.8 &&
+                      getBudgetSpent(budget) <= budget.limit
                     "
-                    [class.progress-danger]="budget.spent > budget.limit"
-                    [style.width.%]="budget.limit > 0 ? (budget.spent / budget.limit) * 100 : 0"
+                    [class.progress-danger]="getBudgetSpent(budget) > budget.limit"
+                    [style.width.%]="getBudgetUsagePercent(budget)"
                   ></div>
                 </div>
               </article>
